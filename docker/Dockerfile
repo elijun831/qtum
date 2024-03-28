@@ -101,14 +101,14 @@ RUN mkcert "localhost" "127.0.0.1" "::1"
 
 # Copy SSL certificate to Nginx directory
 RUN mkdir -p /etc/nginx/certs/ && \
-    cp /root/.local/share/mkcert/localhost+2.pem /etc/nginx/certs/_wildcard.localhost+2.pem && \
-    cp /root/.local/share/mkcert/localhost+2-key.pem /etc/nginx/certs/_wildcard.localhost+2-key.pem && \
-    chown root:root /etc/nginx/certs/_wildcard.localhost+2.pem /etc/nginx/certs/_wildcard.localhost+2-key.pem && \
-    chmod 600 /etc/nginx/certs/_wildcard.localhost+2.pem /etc/nginx/certs/_wildcard.localhost+2-key.pem
+    cp /root/.local/share/mkcert/localhost+2.pem /etc/nginx/certs/localhost+2.pem && \
+    cp /root/.local/share/mkcert/localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem && \
+    chown root:root /etc/nginx/certs/localhost+2.pem /etc/nginx/certs/localhost+2-key.pem && \
+    chmod 600 /etc/nginx/certs/localhost+2.pem /etc/nginx/certs/localhost+2-key.pem
 
 # Copy SSL certificates to the appropriate location
 COPY ./localhost+2.pem /etc/nginx/certs/localhost+2.pem
-COPY ./localhost+2-key.pem /etc/nginx/certs/_wildcard.localhost+2-key.pem
+COPY ./localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem
 
 # Install Nginx
 RUN apt-get install -y nginx
