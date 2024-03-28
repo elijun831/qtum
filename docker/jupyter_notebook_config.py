@@ -26,6 +26,6 @@ c.NotebookApp.webapp_settings = {
 }
 
 # SSL/TLS settings
-c.NotebookApp.allow_origin = 'https://*.quantumworkspace.dev'
-c.NotebookApp.allow_origin_pat = 'https://.*.quantumworkspace.dev'
+c.NotebookApp.allow_origin = 'https://localhost'
+c.NotebookApp.allow_origin_pat = 'https://localhost'
 c.NotebookApp.disable_check_xsrf = True
