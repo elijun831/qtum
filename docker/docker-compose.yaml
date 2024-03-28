@@ -9,18 +9,6 @@ services:
     volumes:
       - /notebooks
 
-  quantumworkspace:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8888:8888"
-      - "5678:5678"
-    volumes:
-      - /notebooks
-    networks:
-      - mynetwork
-
   nginx:
     image: nginx:latest
     ports:
@@ -35,9 +23,7 @@ services:
     networks:
       - mynetwork
     depends_on:
-      - quantumworkspace
-    links:
-      - quantumworkspace
+      - web
 
 networks:
   mynetwork:
