@@ -1,6 +1,6 @@
-# Version 2.0.5
+# Version 3.0.0
 # Base image
-FROM debian:latest
+FROM ubuntu:latest
 
 # Copy custom hosts file to /etc/hosts
 COPY hosts /etc/hosts
@@ -105,8 +105,8 @@ RUN mkdir -p /etc/nginx/certs/ && \
     chmod 600 /etc/nginx/certs/localhost+2.pem /etc/nginx/certs/localhost+2-key.pem
 
 # Copy SSL certificates to the appropriate location
-COPY ./localhost+2.pem /etc/nginx/certs/localhost+2.pem
-COPY ./localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem
+# COPY ./localhost+2.pem /etc/nginx/certs/localhost+2.pem
+# COPY ./localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem
 
 # Install Nginx
 RUN apt-get install -y nginx
