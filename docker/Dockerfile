@@ -87,24 +87,29 @@ RUN . /venv/bin/activate && jupyter notebook --generate-config -y
 # Modify Jupyter Notebook config
 RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
 
+# Install mkcert and generate SSL certificate
 RUN apt-get update && \
-  curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
-  chmod +x mkcert-v*-linux-amd64 && \
-  mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert && \
-  mkcert -install
-
-# Install the mkcert root CA certificate 
+    curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
+    chmod +x mkcert-v*-linux-amd64 && \
+    mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert && \
+    mkcert -install && \
+    mkcert -CAROOT && \
+    
+# Install the mkcert root CA certificate and reate localhost certificates
 RUN mkcert -CAROOT
-
-# Create localhost certificates
 RUN mkcert "localhost" "127.0.0.1" "::1"
 
 # Copy certificates to the Nginx directory and set secure permissions
 RUN mkdir -p /etc/nginx/certs/ && \
-    cp /root/.local/share/mkcert/localhost+2.pem /etc/nginx/certs/localhost+2.pem && \
-    cp /root/.local/share/mkcert/localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem && \
-    chown root:root /etc/nginx/certs/localhost+2.pem /etc/nginx/certs/localhost+2-key.pem && \
-    chmod 600 /etc/nginx/certs/localhost+2.pem /etc/nginx/certs/localhost+2-key.pem 
+    mkdir -p /home/elijun9831/qtum/docker/certs/ && \
+    cp /root/.local/share/mkcert/localhost+2.pem /etc/nginx/certs/localhost+2.pem && \ 
+    cp /root/.local/share/mkcert/localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem && \  
+    cp /root/.local/share/mkcert/localhost+2.pem /home/elijun9831/qtum/docker/certs/localhost+2.pem && \ 
+    cp /root/.local/share/mkcert/localhost+2-key.pem /home/elijun9831/qtum/docker/certs/localhost+2-key.pem && \
+    chown -R root:root /etc/nginx/certs/ && \  
+    chown -R elijun9831:elijun9831 /home/elijun9831/qtum/docker/certs/ && \  
+    chmod 600 /etc/nginx/certs/* && \
+    chmod 600 /home/elijun9831/qtum/docker/certs/* 
 
 # Copy SSL certificates to the appropriate location
 # COPY ./localhost+2.pem /etc/nginx/certs/localhost+2.pem
