@@ -21,7 +21,7 @@ with open(config_file, mode='w') as f:
 from IPython.lib import passwd
 password = 'YOUR_SECURE_PASSWORD'
 hashed_password = passwd(password)
-print(hashed_password
+print(hashed_password)
 
 # Settings for JupyterLab
 c.ServerApp.jpserver_extensions = {
@@ -30,7 +30,7 @@ c.ServerApp.jpserver_extensions = {
 }
 
 # Enable WebSocket with SSL
-c.NotebookApp.websocket_url = 'wss://:8888'
+c.NotebookApp.websocket_url = 'wss://*.quantumworkspace.dev:8888'
 c.NotebookApp.base_url = '/'
 
 # Adjust Content-Security-Policy for secure WebSocket connection
