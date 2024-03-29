@@ -96,19 +96,25 @@ RUN apt-get update && \
     mkcert -CAROOT
 
 # Generate SSL certificates with specific locations
-RUN mkcert "localhost" "127.0.0.1" "::1" \
-    -cert-file /root/.local/share/mkcert/localhost+2.pem \
-    -key-file /root/.local/share/mkcert/localhost+2-key.pem && \
+# Install mkcert and generate SSL certificate
+RUN apt-get update && \
+    curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
+    chmod +x mkcert-v*-linux-amd64 && \
+    mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert && \
+    mkcert -install && \
+    mkcert -CAROOT && \
+    mkcert -cert-file /root/.local/share/mkcert/_wildcard.quantumworkspace.dev+3.pem -key-file /root/.local/share/mkcert/_wildcard.quantumworkspace.dev+3-key.pem "*.quantumworkspace.dev" localhost 127.0.0.1 ::1 && \
     mkdir -p /etc/nginx/certs/ && \
     mkdir -p /home/elijun9831/qtum/docker/certs/ && \
-    cp /root/.local/share/mkcert/localhost+2.pem /etc/nginx/certs/localhost+2.pem && \
-    cp /root/.local/share/mkcert/localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem && \
-    cp /root/.local/share/mkcert/localhost+2.pem /home/elijun9831/qtum/docker/certs/localhost+2.pem && \
-    cp /root/.local/share/mkcert/localhost+2-key.pem /home/elijun9831/qtum/docker/certs/localhost+2-key.pem && \
-    chown -R root:root /etc/nginx/certs/ && \
-    chown -R elijun9831:elijun9831 /home/elijun9831/qtum/docker/certs/ && \
-    chmod 600 /etc/nginx/certs/* && \
-    chmod 600 /home/elijun9831/qtum/docker/certs/*
+    cp /root/.local/share/mkcert/_wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem && \
+    cp /root/.local/share/mkcert/_wildcard.quantumworkspace.dev+3-key.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem && \
+    chown root:root /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem && \
+    chmod 600 /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem && \
+    mkcert "*.quantumworkspace.dev" localhost 127.0.0.1 ::1 && \
+    cp /root/.local/share/mkcert/_wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem && \
+    cp /root/.local/share/mkcert/_wildcard.quantumworkspace.dev+3-key.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem && \
+    chown root:root /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem && \
+    chmod 600 /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem
 
 # Copy SSL certificates to the appropriate location
 # COPY ./localhost+2.pem /etc/nginx/certs/localhost+2.pem
