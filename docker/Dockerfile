@@ -14,7 +14,7 @@ ENV PYTHONFAULTHANDLER 1
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
     python3.11 \
-    python3-venv \
+    python3.11-venv \
     python3-apt \
     python3-pip \
     python3-setuptools \
