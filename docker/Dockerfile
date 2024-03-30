@@ -117,8 +117,9 @@ RUN apt-get update && \
     chmod 600 /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem
 
 # Copy SSL certificates to the appropriate location
-# COPY ./localhost+2.pem /etc/nginx/certs/localhost+2.pem
-# COPY ./localhost+2-key.pem /etc/nginx/certs/localhost+2-key.pem
+# COPY ./_wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem
+# COPY ./_wildcard.quantumworkspace.dev+3-key.pem /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem
+
 
 # Install Nginx
 RUN apt-get install -y nginx
