@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Start Nginx
-envsubst < /app/nginx.conf > /etc/nginx/nginx.conf
-nginx &
+envsubst < ./nginx.conf > /etc/nginx/nginx.conf
+nginx -g "daemon off;" &
 
 # Activate virtual environment
 . /venv/bin/activate
 
 # Start JupyterLab
-pipenv run jupyter lab --notebook-dir=/notebooks --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
+pipenv run jupyter lab --notebook-dir=/notebooks --ip=0.0.0.0 --port=80 --no-browser --allow-root &
