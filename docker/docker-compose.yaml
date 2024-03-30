@@ -3,7 +3,7 @@ version: '3.8'
 services:
   web:
     build: ./
-    image: elijun9831/quantumworkspace:2.0.5
+    image: elijun9831/quantumworkspace:3.0.0
     networks:
       - mynetwork
     volumes:
