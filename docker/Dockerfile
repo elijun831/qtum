@@ -138,8 +138,8 @@ EXPOSE 443
 EXPOSE 80
 
 # Copy the main Nginx configuration file
-COPY ./nginx.conf /etc/nginx/nginx.conf
-COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
+# COPY ./nginx.conf /etc/nginx/nginx.conf
+# COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 
 # Create non-root user for security
 RUN adduser -u 5678 --disabled-password --gecos "" appuser
