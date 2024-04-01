@@ -11,12 +11,6 @@ ENV LC_ALL C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONFAULTHANDLER 1
 
-# Set environment variables
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONFAULTHANDLER 1
-
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
     python3.11 \
@@ -122,19 +116,14 @@ RUN rm /etc/nginx/sites-enabled/default
 
 # Copy custom Nginx configuration to /etc/nginx/conf.d/
 COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
-
-# Copy the main Nginx configuration file
+COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
-
-# Copy SSL certificates to the appropriate location
-COPY ./_wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/
-COPY ./_wildcard.quantumworkspace.dev+3-key.pem /etc/nginx/certs/
 
 # Set up work directory
 WORKDIR /app
 
 # Create a directory for notebooks
-RUN mkdir /notebooks
+RUN mkdir -p /notebooks
 
 # Specify the directory as a volume
 VOLUME /notebooks
