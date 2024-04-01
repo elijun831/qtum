@@ -1,6 +1,8 @@
-# QuantumWorkspace
+# QuantumWorkspace - A Quantum-Ready Jupyter Environment
 
-This repository contains a Dockerfile for setting up a Jupyer notebook environment with Qiskit, QSharp, and Amazon Braket, built upon the latest Debian version.
+This repository provides a Dockerfile for creating a Jupyter notebook environment within a Pipenv virtual environment. 
+It is equipped with Python packages tailored for quantum computing, including Qiskit, QSharp, and Amazon Braket. 
+Built on the latest Debian version, this Dockerfile streamlines the setup process for quantum programming.
 
 ## Prerequisites
 

@@ -1,4 +1,4 @@
-# Version 2.0.2
+# Version 2.0.3
 # Base image
 FROM debian:latest
 
@@ -10,51 +10,62 @@ ENV PYTHONFAULTHANDLER 1
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
-python3.11 \
-build-essential \
-curl \
-vim \
-vim-common \
-vim-runtime \
-nano \
-flameshot \
-keepassxc \
-bleachbit \
-g++ \
-git \
-libblas-dev \
-libffi-dev \
-liblapack-dev \
-libssl-dev \
-texlive-latex-base \
-latexmk \
-make \
-wget \
-zlib1g-dev \
-bash \
-&& apt-get clean
+    python3.11 \
+    python3-venv \
+    python3-apt \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
+    build-essential \
+    curl \
+    vim \
+    vim-common \
+    vim-runtime \
+    nano \
+    flameshot \
+    keepassxc \
+    bleachbit \
+    g++ \
+    git \
+    libblas-dev \
+    libffi-dev \
+    liblapack-dev \
+    libssl-dev \
+    texlive-latex-base \
+    latexmk \
+    make \
+    wget \
+    zlib1g-dev \
+    bash \
+    tree \
+    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
-$HOME/.cargo/bin/rustup update
+    $HOME/.cargo/bin/rustup update
 ENV PATH="/root/.cargo/bin:${PATH}"
 ENV PROJECT_DIR /usr/local/src/webapp
 RUN mkdir -p ${PROJECT_DIR}/rust
 WORKDIR ${PROJECT_DIR}/rust
 
-# Install pipenv & upgrade pip
-RUN pip install --upgrade pip
-RUN pip install pipenv
-
 # Set up work directory for Python application
-WORKDIR /app
+WORKDIR /home/appuser/app
 
-# Copy Pipfile and Pipfile.lock and install pipenv
-COPY Pipfile Pipfile.lock /app/
-RUN pipenv install --deploy
+# Copy Pipfile and Pipfile.lock
+COPY Pipfile Pipfile.lock /home/appuser/app/
 
-# Install Jupyter
-RUN pipenv install jupyter notebook jupyterlab voila 
+# Create and activate the virtual environment
+RUN python3.11 -m venv /venv
+ENV PATH="/venv/bin:${PATH}"
+RUN . /venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install pipenv
+
+# Install dependencies using pipenv
+RUN PIPENV_IGNORE_VIRTUALENVS=1 . /venv/bin/activate && pipenv install --deploy
+
+# Install Jupyter within the virtual environment
+RUN . /venv/bin/activate && pipenv run pip install jupyter notebook jupyterlab voila
 
 # Expose ports
 EXPOSE 8888
@@ -72,13 +83,13 @@ RUN mkdir /notebooks
 VOLUME /notebooks
 
 # Create non-root user for security
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+RUN adduser -u 5678 --disabled-password --gecos "" appuser
 
 # Change ownership of the notebooks directory to appuser
 RUN chown -R appuser:appuser /notebooks
 
-# Switch to appuser
-USER appuser
+# Switch to root
+USER root
 
 # Change permissions of the directories to ensure appuser can write to them
 RUN chmod -R 755 /app && chmod -R 755 /notebooks

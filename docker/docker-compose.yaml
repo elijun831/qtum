@@ -1,4 +1,4 @@
-version: '2.0.2'
+version: '3.8'
 services:
   webapp:
     build:
@@ -6,13 +6,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8888:8888"
-      - "5678:5678"
-      - "8080:8080"
-      - "80:80"
     volumes:
-      - ./app:/app
+      - ./app:/home/appuser/app:rw
       - ./notebooks:/notebooks
-    user: appuser
+    user: "root"
     environment:
-      - PYTHONUNBUFFERED=1
-      - PYTHONDEBUG=1
+      - PUID=5678
+      - PGID=5678

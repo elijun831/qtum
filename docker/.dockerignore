@@ -1,37 +1,31 @@
-# Version 2.0.1
-# Ignore everything
-*
+# Version 2.0.3
 
-# Except Dockerfile and necessary files
-!Dockerfile
-!Pipfile
-!Pipfile.lock
-
-# Ignore Python cache files
+# Ignore Python cache files 
 **/__pycache__
 **/*.pyc
 **/*.pyo
 **/*.pyd
 
-# Ignore git and vscode directories
+# Ignore common development artifacts
 .git
 .vscode
-
-# Ignore log files
 *.log
-
-# Ignore OS generated files
 .DS_Store
 Thumbs.db
 
 # Ignore Jupyter notebook checkpoints
 **/.ipynb_checkpoints
 
-# Ignore Python virtual environment
-venv
+# Ignore Python virtual environment - Essential for efficient build contexts
+venv/
 
-# Ignore application directory
-/app
+# Include essential build files - Ensures successful builds
+!Dockerfile
+!Pipfile
+!Pipfile.lock
 
-# Include notebooks directory
+# Assuming your source code is in '/app', adjust if necessary
+!app/
+
+# Include the notebooks directory - Your core workspace!
 !notebooks/
