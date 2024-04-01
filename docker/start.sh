@@ -27,10 +27,6 @@ if [[ ! -d $NOTEBOOKS_DIRECTORY ]]; then
   exit 1
 fi
 
-# ================ Apply Nginx Configuration ================
-echo "[INFO] Applying Nginx configuration..."
-envsubst < $NGINX_CONF_FILE > /etc/nginx/nginx.conf
-
 # ================ Start Nginx ================
 echo "[INFO] Starting Nginx in foreground mode..."
 nginx -g "daemon off;" &
