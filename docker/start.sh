@@ -2,14 +2,21 @@
 
 # ================ Start Nginx ================
 echo "[INFO] Starting Nginx in foreground mode..."
-nginx -g "daemon off;" &
-NGINX_PID=$!
+nginx -g "daemon off;"
 
 # ================ Activate Virtual Environment ================
-echo "[INFO] Activating Python virtual environment ($VIRTUAL_ENV)..."
-. $VIRTUAL_ENV/bin/activate
+echo "[INFO] Activating Python virtual environment..."
+. /venv/bin/activate
 
 # ================ Start JupyterLab ================
 echo "[INFO] Starting JupyterLab..."
-pipenv run jupyter lab --notebook-dir=$NOTEBOOKS_DIRECTORY --ip=0.0.0.0 --port=8888 --no-browser --allow-root &
-JUPYTER_PID=$!
+pipenv run jupyter lab --notebook-dir=/notebooks --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+
+# ================ Main Execution Loop ================
+echo "[INFO] Container startup complete. Ready to serve requests."
+
+# Infinite loop to handle SIGINT, SIGTERM signals
+while true; do
+  sleep 1 &
+  wait $!
+done
