@@ -142,6 +142,7 @@ USER root
 
 # Change permissions of the directories to ensure appuser can write to them
 RUN chmod -R 755 /app && chmod -R 755 /notebooks
+RUN chmod +x /start.sh
 
 # Start JupyterLab
-CMD ["/bin/bash", "/start.sh"]
+ENTRYPOINT ["/bin/bash", "/start.sh"]
