@@ -1,3 +1,5 @@
+import jupyter_core.paths as jpaths
+
 # Common settings for both Jupyter Notebook and JupyterLab
 c.NotebookApp.token = ''
 
@@ -7,6 +9,7 @@ c.NotebookApp.port = 8888
 c.NotebookApp.allow_origin = '*'
 c.NotebookApp.open_browser = False
 c.ServerApp.trust_xheaders = True
+c.MultiKernelManager.default_kernel_name = 'python3'
 # c.NotebookApp.password = ''  # Commented out to leave the password blank
 
 # Generate config (Comment out if you do not like to apply this settings)
