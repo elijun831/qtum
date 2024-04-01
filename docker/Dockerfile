@@ -1,6 +1,6 @@
 # Version 3.0.0-1
 # Base image
-FROM debian:latest
+FROM ubuntu:latest
 
 # Copy custom hosts file to /etc/hosts
 COPY hosts /etc/hosts
@@ -11,10 +11,16 @@ ENV LC_ALL C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONFAULTHANDLER 1
 
+# Set environment variables
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONFAULTHANDLER 1
+
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
     python3.11 \
-    python3-venv \
+    python3.11-venv \
     python3-apt \
     python3-pip \
     python3-setuptools \
@@ -45,7 +51,8 @@ RUN apt-get update && apt-get install -y \
     bash \
     tree \
     nginx \
-    && apt-get clean
+    libnss3-tools \
+    && apt-get clea
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
@@ -86,22 +93,22 @@ RUN . /venv/bin/activate && jupyter notebook --generate-config -y
 # Modify Jupyter Notebook config
 RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
 
-# Copy SSL certificates
-COPY _wildcard.quantumworkspace.dev+3.pem /home/elijun9831/cloud/q/docker/
-COPY _wildcard.quantumworkspace.dev+3-key.pem /home/elijun9831/cloud/q/docker/
+# Install mkcert and generate SSL certificate
+RUN mkdir -p /etc/nginx/certs && \
+    apt-get update && \
+    curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
+    chmod +x mkcert-v*-linux-amd64 && \
+    mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert && \
+    mkcert -install && \
+    mkcert -CAROOT -cert-file /etc/nginx/certs/mkcert-ca.pem  -key-file /etc/nginx/certs/mkcert-ca-key.pem && \
+    mkcert -cert-file /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem -key-file /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem "*.quantumworkspace.dev" localhost 127.0.0.1 ::1
 
-# Copy SSL certificates to the Nginx certs directory
-COPY _wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/
-COPY _wildcard.quantumworkspace.dev+3-key.pem /etc/nginx/certs/
+# Create Nginx user and group 
+RUN groupadd -r nginx && useradd -r -g nginx nginx
 
-# Install Nginx
-RUN apt-get install -y nginx
-
-# Remove default Nginx configuration
-RUN rm /etc/nginx/sites-enabled/default
-
-# Copy custom Nginx configuration to /etc/nginx/conf.d/
-COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
+# Setting permissions and ownership
+RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
+    chmod 600 /etc/nginx/certs/*.pem
 
 # Expose ports
 EXPOSE 8888
@@ -109,6 +116,12 @@ EXPOSE 5678
 EXPOSE 8080
 EXPOSE 443
 EXPOSE 80
+
+# Remove default Nginx configuration
+RUN rm /etc/nginx/sites-enabled/default
+
+# Copy custom Nginx configuration to /etc/nginx/conf.d/
+COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 
 # Copy the main Nginx configuration file
 COPY ./nginx.conf /etc/nginx/nginx.conf
