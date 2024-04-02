@@ -1,6 +1,6 @@
-# Version 2.0.4
+# Version 3.0.0-1
 # Base image
-FROM debian:latest
+FROM ubuntu:latest
 
 # Copy custom hosts file to /etc/hosts
 COPY hosts /etc/hosts
@@ -14,7 +14,7 @@ ENV PYTHONFAULTHANDLER 1
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
     python3.11 \
-    python3-venv \
+    python3.11-venv \
     python3-apt \
     python3-pip \
     python3-setuptools \
@@ -45,6 +45,7 @@ RUN apt-get update && apt-get install -y \
     bash \
     tree \
     nginx \
+    libnss3-tools \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -86,22 +87,22 @@ RUN . /venv/bin/activate && jupyter notebook --generate-config -y
 # Modify Jupyter Notebook config
 RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
 
-# Copy SSL certificates
-COPY _wildcard.quantumworkspace.dev+3.pem /home/elijun9831/cloud/q/docker/
-COPY _wildcard.quantumworkspace.dev+3-key.pem /home/elijun9831/cloud/q/docker/
+# Install mkcert and generate SSL certificate
+RUN mkdir -p /etc/nginx/certs && \
+    apt-get update && \
+    curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
+    chmod +x mkcert-v*-linux-amd64 && \
+    mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert && \
+    mkcert -install && \
+    mkcert -CAROOT -cert-file /etc/nginx/certs/mkcert-ca.pem  -key-file /etc/nginx/certs/mkcert-ca-key.pem && \
+    mkcert -cert-file /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem -key-file /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem "*.quantumworkspace.dev" localhost 127.0.0.1 ::1
 
-# Copy SSL certificates to the Nginx certs directory
-COPY _wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/
-COPY _wildcard.quantumworkspace.dev+3-key.pem /etc/nginx/certs/
+# Create Nginx user and group 
+RUN groupadd -r nginx && useradd -r -g nginx nginx
 
-# Install Nginx
-RUN apt-get install -y nginx
-
-# Remove default Nginx configuration
-RUN rm /etc/nginx/sites-enabled/default
-
-# Copy custom Nginx configuration to /etc/nginx/conf.d/
-COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
+# Setting permissions and ownership
+RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
+    chmod 600 /etc/nginx/certs/*.pem
 
 # Expose ports
 EXPOSE 8888
@@ -110,18 +111,19 @@ EXPOSE 8080
 EXPOSE 443
 EXPOSE 80
 
-# Copy the main Nginx configuration file
-COPY ./nginx.conf /etc/nginx/nginx.conf
+# Remove default Nginx configuration
+RUN rm /etc/nginx/sites-enabled/default
 
-# Copy SSL certificates to the appropriate location
-COPY ./_wildcard.quantumworkspace.dev+3.pem /etc/nginx/certs/
-COPY ./_wildcard.quantumworkspace.dev+3-key.pem /etc/nginx/certs/
+# Copy custom Nginx configuration to /etc/nginx/conf.d/
+COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
+COPY nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY ./nginx.conf /etc/nginx/nginx.conf
 
 # Set up work directory
 WORKDIR /app
 
 # Create a directory for notebooks
-RUN mkdir /notebooks
+RUN mkdir -p /notebooks
 
 # Specify the directory as a volume
 VOLUME /notebooks
@@ -140,6 +142,7 @@ USER root
 
 # Change permissions of the directories to ensure appuser can write to them
 RUN chmod -R 755 /app && chmod -R 755 /notebooks
+RUN chmod +x /start.sh
 
 # Start JupyterLab
-CMD ["/bin/bash", "/start.sh"]
+ENTRYPOINT ["/bin/bash", "/start.sh"]

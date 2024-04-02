@@ -3,7 +3,11 @@ version: '3.8'
 services:
   web:
     build: ./
-    image: elijun831/quantumworkspace:2.0.4
+    image: elijun831/quantumworkspace:3.0.0
+    networks:
+      - mynetwork
+    volumes:
+      - /notebooks:/notebooks  # Adjust as needed
 
   quantumworkspace:
     build:
@@ -22,10 +26,16 @@ services:
     image: nginx:latest
     ports:
       - "8080:8080"
-      - "80:80"
       - "8443:443"
+      - "443:443"
+      - "80:80"
     volumes:
       - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf
+    environment:
+      - NGX_HTTP_PORT=80
+      - NGX_HTTPS_PORT=443
+      - JUPYTER_HOST=web  # Or internal IP of 'web' service 
+      - JUPYTER_PORT=8888
     networks:
       - mynetwork
     depends_on:
