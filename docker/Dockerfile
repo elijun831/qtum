@@ -1,4 +1,4 @@
-# Version 3.0.0-1
+# Version 3.0.0-2
 # Base image
 FROM ubuntu:latest
 
@@ -46,6 +46,8 @@ RUN apt-get update && apt-get install -y \
     tree \
     nginx \
     libnss3-tools \
+    certbot \
+    openssl \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
