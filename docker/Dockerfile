@@ -89,15 +89,29 @@ RUN . /venv/bin/activate && jupyter notebook --generate-config -y
 # Modify Jupyter Notebook config
 RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
 
-# Install mkcert and generate SSL certificate
-RUN mkdir -p /etc/nginx/certs && \
-    apt-get update && \
-    curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
-    chmod +x mkcert-v*-linux-amd64 && \
-    mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert && \
-    mkcert -install && \
-    mkcert -CAROOT -cert-file /etc/nginx/certs/mkcert-ca.pem  -key-file /etc/nginx/certs/mkcert-ca-key.pem && \
-    mkcert -cert-file /etc/nginx/certs/_wildcard.quantumworkspace.dev+3.pem -key-file /etc/nginx/certs/_wildcard.quantumworkspace.dev+3-key.pem "*.quantumworkspace.dev" localhost 127.0.0.1 ::1
+# Create a directory to store the certificates
+RUN mkdir -p /etc/nginx/certs
+
+# OpenSSL certificate & dhparam generation script
+WORKDIR /etc/nginx/certs  # Set the working directory for the commands
+RUN openssl genrsa -out _wildcard.quantumworkspace.dev+3-key.pem 2048 && \
+    openssl req -new -key _wildcard.quantumworkspace.dev+3-key.pem -out _wildcard.quantumworkspace.dev+3.csr -subj "/CN=*.quantumworkspace.dev" -config <( \
+    cat <<-EOF \
+    [req]
+    default_bits = 2048
+    prompt = no
+    default_md = sha256
+    distinguished_name = dn
+
+    [dn]
+    CN = *.quantumworkspace.dev 
+
+    [SAN]
+    subjectAltName = DNS:*.quantumworkspace.dev, DNS:localhost, IP:127.0.0.1, IP:::1
+    EOF
+    ) && \
+    openssl x509 -req -days 365 -in _wildcard.quantumworkspace.dev+3.csr -signkey _wildcard.quantumworkspace.dev+3-key.pem -out _wildcard.quantumworkspace.dev+3.pem && \
+    openssl dhparam -out dhparam.pem 2048
 
 # Create Nginx user and group 
 RUN groupadd -r nginx && useradd -r -g nginx nginx
