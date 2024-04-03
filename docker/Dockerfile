@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y \
     g++ \
     git \
     libblas-dev \
+    libeigen3-dev \
     libffi-dev \
     libhdf5-serial-dev \
     liblapack-dev \
