@@ -99,24 +99,18 @@ RUN mkdir -p /etc/nginx/certs
 
 # OpenSSL certificate & dhparam generation script
 WORKDIR /etc/nginx/certs  # Set the working directory for the commands
-RUN openssl genrsa -out _wildcard.quantumworkspace.dev+3-key.pem 2048 && \
-    openssl req -new -key _wildcard.quantumworkspace.dev+3-key.pem -out _wildcard.quantumworkspace.dev+3.csr -subj "/CN=*.quantumworkspace.dev" -config <( \
-    cat <<-EOF \
-    [req]
-    default_bits = 2048
-    prompt = no
-    default_md = sha256
-    distinguished_name = dn
 
-    [dn]
-    CN = *.quantumworkspace.dev 
+# Create the certificates directory if it doesn't exist
+RUN mkdir -p /etc/nginx/certs
 
-    [SAN]
-    subjectAltName = DNS:*.quantumworkspace.dev, DNS:localhost, IP:127.0.0.1, IP:::1
-    EOF
-    ) && \
-    openssl x509 -req -days 365 -in _wildcard.quantumworkspace.dev+3.csr -signkey _wildcard.quantumworkspace.dev+3-key.pem -out _wildcard.quantumworkspace.dev+3.pem && \
-    openssl dhparam -out dhparam.pem 2048
+# Copy the script into the image
+COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
+
+# Make the script executable
+RUN chmod +x /etc/nginx/certs/generate_certs.sh
+
+# Execute the script
+RUN /etc/nginx/certs/generate_certs.sh 
 
 # Create Nginx user and group 
 RUN groupadd -r nginx && useradd -r -g nginx nginx
