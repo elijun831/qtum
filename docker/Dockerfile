@@ -23,6 +23,7 @@ RUN apt-get update && apt-get install -y \
     binutils \
     build-essential \
     curl \
+    cmake \
     vim \
     vim-common \
     vim-runtime \
@@ -35,6 +36,7 @@ RUN apt-get update && apt-get install -y \
     git \
     libblas-dev \
     libffi-dev \
+    libhdf5-serial-dev \
     liblapack-dev \
     libssl-dev \
     texlive-latex-base \
@@ -48,6 +50,8 @@ RUN apt-get update && apt-get install -y \
     libnss3-tools \
     certbot \
     openssl \
+    ruby \
+    ruby-dev \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
