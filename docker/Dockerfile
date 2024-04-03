@@ -1,6 +1,7 @@
 # Version 3.0.0-2
 # Base image
 FROM ubuntu:latest
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Copy custom hosts file to /etc/hosts
 COPY hosts /etc/hosts
