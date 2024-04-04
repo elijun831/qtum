@@ -1,0 +1,27 @@
+cluster.name: "my-cluster"
+node.name: "my-node"
+
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+
+network.host: 0.0.0.0
+
+discovery.seed_hosts: ["localhost:9200"]
+
+http.port: 9200
+
+# Memory allocation
+heap.size: 2g
+
+# GC tune
+jvm.options: "-XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled"
+
+# Index setup
+index.refresh_interval: -1
+index.number_of_replicas: 1
+index.number_of_shards: 5
+
+# Snapshot setting
+snapshot.location: /var/lib/elasticsearch/snapshots
+
+gateway.recover_after_nodes: 3
