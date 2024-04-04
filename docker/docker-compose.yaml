@@ -1,13 +1,5 @@
 services:
-  web:
-    build: ./
-    image: elijun831/quantumworkspace:3.0.0
-    networks:
-      - mynetwork
-    volumes:
-      - /notebooks:/notebooks  # Adjust as needed
-
-  quantumworkspace:
+  quantumworkspace: # Rename if desired
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,31 +7,51 @@ services:
       - "8888:8888"
       - "5678:5678"
     volumes:
-      - /notebooks
-    networks:
-      - mynetwork
-    hostname: quantumworkspace
+      - /notebooks:/notebooks
+
+  prometheus:
+    image: prom/prometheus:latest  # Or specify your version
+    ports:
+      - "9090:9090"
+    volumes:
+      - prometheus_data:/prometheus  # Volume for Prometheus data
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  fluentd:
+    image: fluent/fluentd:latest  # Or specify your version
+    ports:
+      - "24224:24224"
+    volumes:
+      - fluentd_data:/fluentd  # Volume for Fluentd data
+      - ./fluentd.conf:/fluentd/etc/fluentd.conf
+
+  elasticsearch:
+    image: elasticsearch:latest  # Or specify your version
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data  # Volume for Elasticsearch data 
+      - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+
+  kibana:
+    image: kibana:latest   # Or specify your version
+    ports:
+      - "5601:5601"
+    volumes:
+       - ./kibana.yml:/usr/share/kibana/config/kibana.yml 
 
   nginx:
     image: nginx:latest
-    ports:
-      - "8080:8080"
-      - "8443:443"
-      - "443:443"
+    ports: 
       - "80:80"
+      - "443:443"
     volumes:
       - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf
-    environment:
-      - NGX_HTTP_PORT=80
-      - NGX_HTTPS_PORT=443
-      - JUPYTER_HOST=web  # Or internal IP of 'web' service 
-      - JUPYTER_PORT=8888
-    networks:
-      - mynetwork
+      - ./certs:/etc/nginx/certs # If using Nginx for SSL in another container
     depends_on:
-      - quantumworkspace
-    links:
-      - quantumworkspace
+      - quantumworkspace 
+
+  # (Consider adding an Istio service here)
 
 networks:
   mynetwork:
