@@ -47,6 +47,7 @@ strawberryfields = "*"
 sympy = "*"
 voila = "*"
 requests = "*"
+jaeger-client = "*"
 
 [requires]
 python_version = "3.11"
