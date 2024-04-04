@@ -137,6 +137,9 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx
 RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
     chmod 600 /etc/nginx/certs/*.pem
 
+RUN chown nginx:nginx /etc/nginx/certs/*.csr && \
+    chmod 600 /etc/nginx/certs/*.csr
+
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888
 EXPOSE 5678
