@@ -15,7 +15,7 @@ echo "[INFO] Starting Kibana..."
 
 echo "[INFO] Starting Fluentd..."
 # Start Fluentd in the background (adjust the command as needed)
-/path/to/fluentd -c /etc/td-agent/fluentd.conf &
+/etc/td-agent/fluentd.conf -c /etc/td-agent/fluentd.conf &
 
 # ================ Start Nginx ================
 echo "[INFO] Starting Nginx in foreground mode..."
