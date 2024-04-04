@@ -14,51 +14,50 @@ ENV PYTHONFAULTHANDLER 1
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
-    python3.11 \
-    python3.11-venv \
-    python3-apt \
-    python3-pip \
-    python3-setuptools \
-    python3-wheel \
-    python3-distutils \
-    binutils \
-    build-essential \
-    curl \
-    vim \
-    vim-common \
-    vim-runtime \
-    nano \
-    flameshot \
-    keepassxc \
-    bleachbit \
-    nodejs \
-    g++ \
-    git \
-    libblas-dev \
-    libffi-dev \
-    liblapack-dev \
-    libssl-dev \
-    texlive-latex-base \
-    latexmk \
-    make \
-    wget \
-    zlib1g-dev \
-    bash \
-    tree \
-    nginx \
-    libnss3-tools \
-    prometheus \
-    td-agent \
-    elasticsearch \
-    kibana \
-    coredns \
-    ruby \
-    ruby-dev \
-    && apt-get clean
+   build-essential \
+   curl \
+   vim \
+   vim-common \
+   vim-runtime \
+   nano \
+   flameshot \
+   keepassxc \
+   bleachbit \
+   nodejs \
+   g++ \
+   git \
+   libblas-dev \
+   libffi-dev \
+   liblapack-dev \
+   libssl-dev \
+   texlive-latex-base \
+   latexmk \
+   make \
+   wget \
+   zlib1g-dev \
+   bash \
+   tree \
+   nginx \
+   libnss3-tools \
+   python3.11 \
+   python3.11-venv \
+   python3-apt \
+   python3-pip \
+   python3-setuptools \
+   python3-wheel \
+   python3-distutils \
+   prometheus \
+   td-agent \
+   elasticsearch \
+   kibana \
+   coredns \
+   ruby \
+   ruby-dev \
+   && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
-    $HOME/.cargo/bin/rustup update
+   $HOME/.cargo/bin/rustup update
 ENV PATH="/root/.cargo/bin:${PATH}"
 ENV PROJECT_DIR /usr/local/src/webapp
 RUN mkdir -p ${PROJECT_DIR}/rust
@@ -66,62 +65,6 @@ WORKDIR ${PROJECT_DIR}/rust
 
 # Install wasm-pack
 RUN cargo install wasm-pack
-
-# Set up work directory for Python application
-WORKDIR /home/appuser/app
-
-# Copy Pipfile and Pipfile.lock
-COPY Pipfile Pipfile.lock /home/appuser/app/
-
-# Create and activate the virtual environment
-RUN python3.11 -m venv /venv
-ENV PATH="/venv/bin:${PATH}"
-RUN . /venv/bin/activate && \
-    pip install --upgrade pip && \
-    pip install pipenv
-
-# Install dependencies using pipenv
-RUN PIPENV_IGNORE_VIRTUALENVS=1 . /venv/bin/activate && pipenv install --deploy
-
-# Install Jupyter within the virtual environment
-RUN . /venv/bin/activate && pipenv run pip install jupyter notebook jupyterlab voila
-
-# Copy pre-configured Jupyter Notebook config
-COPY jupyter_notebook_config.py /home/appuser/.jupyter/jupyter_notebook_config.py
-
-# Generate Jupyter Notebook config
-RUN . /venv/bin/activate && jupyter notebook --generate-config -y
-
-# Modify Jupyter Notebook config
-RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
-
-# Create a directory to store the certificates
-RUN mkdir -p /etc/nginx/certs
-
-# OpenSSL certificate & dhparam generation script
-WORKDIR /etc/nginx/certs  # Set the working directory for the commands
-
-# Create the certificates directory if it doesn't exist
-RUN mkdir -p /etc/nginx/certs
-
-# Copy the script into the image
-COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
-
-# Make the script executable
-RUN chmod +x /etc/nginx/certs/generate_certs.sh
-
-# Execute the script
-RUN /etc/nginx/certs/generate_certs.sh
-
-# Create Nginx user and group 
-RUN groupadd -r nginx && useradd -r -g nginx nginx
-
-# Setting permissions and ownership
-RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
-    chmod 600 /etc/nginx/certs/*.pem
-
-RUN chown nginx:nginx /etc/nginx/certs/*.csr && \
-    chmod 600 /etc/nginx/certs/*.csr
 
 # Configure Prometheus
 RUN mkdir -p /etc/prometheus
@@ -148,15 +91,43 @@ RUN mkdir -p /etc/coredns
 COPY Corefile /etc/coredns/Corefile
 RUN chown coredns:coredns /etc/coredns/Corefile
 
+# Create a directory to store the certificates
+RUN mkdir -p /etc/nginx/certs
+
+# OpenSSL certificate & dhparam generation script
+WORKDIR /etc/nginx/certs # Set the working directory for the commands
+
+# Create the certificates directory if it doesn't exist
+RUN mkdir -p /etc/nginx/certs
+
+# Copy the script into the image
+COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
+
+# Make the script executable
+RUN chmod +x /etc/nginx/certs/generate_certs.sh
+
+# Execute the script
+RUN /etc/nginx/certs/generate_certs.sh
+
+# Create Nginx user and group
+RUN groupadd -r nginx && useradd -r -g nginx nginx
+
+# Setting permissions and ownership
+RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
+   chmod 600 /etc/nginx/certs/*.pem
+
+RUN chown nginx:nginx /etc/nginx/certs/*.csr && \
+   chmod 600 /etc/nginx/certs/*.csr
+
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888
 EXPOSE 5678
 EXPOSE 8080
 EXPOSE 443
 EXPOSE 80
-EXPOSE 9090  # Prometheus
-EXPOSE 9200  # Elasticsearch
-EXPOSE 5601  # Kibana 
+EXPOSE 9090 # Prometheus
+EXPOSE 9200 # Elasticsearch
+EXPOSE 5601 # Kibana 
 EXPOSE 24224 # Fluentd
 
 # Remove default Nginx configuration
