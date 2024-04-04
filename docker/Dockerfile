@@ -69,8 +69,8 @@ RUN cargo install wasm-pack
 
 # Configure Prometheus
 RUN mkdir -p /etc/prometheus
-COPY prometheus.yml /etc/prometheus/prometheus.yml
-RUN chown prometheus:prometheus /etc/prometheus/prometheus.yml
+COPY prometheus.yaml /etc/prometheus/prometheus.yaml
+RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
 # Configure Fluentd
 RUN mkdir -p /etc/td-agent
@@ -79,13 +79,13 @@ RUN chown td-agent:td-agent /etc/td-agent/fluentd.conf
 
 # Configure ElasticSearch
 RUN mkdir -p /etc/elasticsearch
-COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
-RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yml
+COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
+RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
 
 # Configure Kibana
 RUN mkdir -p /etc/kibana
-COPY kibana.yml /etc/kibana/kibana.yml
-RUN chown kibana:kibana /etc/kibana/kibana.yml
+COPY kibana.yaml /etc/kibana/kibana.yaml
+RUN chown kibana:kibana /etc/kibana/kibana.yaml
 
 # Configure coredns
 RUN mkdir -p /etc/coredns
