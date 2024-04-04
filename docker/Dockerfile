@@ -51,6 +51,7 @@ RUN apt-get update && apt-get install -y \
     td-agent \
     elasticsearch \
     kibana \
+    coredns \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -83,6 +84,11 @@ RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yml
 RUN mkdir -p /etc/kibana
 COPY kibana.yml /etc/kibana/kibana.yml
 RUN chown kibana:kibana /etc/kibana/kibana.yml
+
+# Configure coredns
+RUN mkdir -p /etc/coredns
+COPY Corefile /etc/coredns/Corefile
+RUN chown coredns:coredns /etc/coredns/Corefile
 
 # Set up work directory for Python application
 WORKDIR /home/appuser/app
