@@ -1,5 +1,13 @@
 services:
-  quantumworkspace: # Rename if desired
+  web:
+    build: ./
+    image: elijun831/quantumworkspace:3.0.0
+    networks:
+      - mynetwork
+    volumes:
+      - /notebooks:/notebooks  # Adjust as needed
+
+  quantumworkspace:
     build:
       context: .
       dockerfile: Dockerfile
@@ -7,7 +15,10 @@ services:
       - "8888:8888"
       - "5678:5678"
     volumes:
-      - /notebooks:/notebooks
+      - /notebooks
+    networks:
+      - mynetwork
+    hostname: quantumworkspace
 
   prometheus:
     image: prom/prometheus:latest  # Or specify your version
