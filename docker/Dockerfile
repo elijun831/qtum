@@ -1,4 +1,4 @@
-# Version 3.0.0-2
+# Version 3.0.0
 # Base image
 FROM ubuntu:latest
 ARG DEBIAN_FRONTEND=noninteractive
@@ -104,7 +104,7 @@ COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh
 
 # Execute the script
-RUN /etc/nginx/certs/generate_certs.sh 
+RUN /etc/nginx/certs/generate_certs.sh
 
 # Create Nginx user and group 
 RUN groupadd -r nginx && useradd -r -g nginx nginx
