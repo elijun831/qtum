@@ -25,7 +25,6 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - prometheus_data:/prometheus  # Volume for Prometheus data
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   fluentd:
@@ -33,15 +32,13 @@ services:
     ports:
       - "24224:24224"
     volumes:
-      - fluentd_data:/fluentd  # Volume for Fluentd data
       - ./fluentd.conf:/fluentd/etc/fluentd.conf
 
   elasticsearch:
     image: elasticsearch:latest  # Or specify your version
     ports:
       - "9200:9200"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data  # Volume for Elasticsearch data 
+    volumes: 
       - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
 
   kibana:
