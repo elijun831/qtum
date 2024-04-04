@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# ================ Start Services in Background ================
+echo "[INFO] Starting Prometheus..."
+# Start Prometheus in the background (adjust the command as needed)
+/etc/prometheus/prometheus.yml --config.file=/etc/prometheus/prometheus.yml &
+
+echo "[INFO] Starting Elasticsearch..."
+# Start Elasticsearch in the background (adjust the command as needed)
+/etc/elasticsearch/elasticsearch.yml &
+
+echo "[INFO] Starting Kibana..."
+# Start Kibana in the background (adjust the command as needed)
+/etc/kibana/kibana.yml &
+
+echo "[INFO] Starting Fluentd..."
+# Start Fluentd in the background (adjust the command as needed)
+/etc/td-agent/fluentd.conf -c /etc/td-agent/fluentd.conf &
+
 # ================ Start Nginx ================
 echo "[INFO] Starting Nginx in foreground mode..."
 nginx -g "daemon off;"
