@@ -95,7 +95,7 @@ RUN chown coredns:coredns /etc/coredns/Corefile
 RUN mkdir -p /etc/nginx/certs
 
 # OpenSSL certificate & dhparam generation script
-WORKDIR /etc/nginx/certs # Set the working directory for the commands
+WORKDIR /etc/nginx/certs 
 
 # Create the certificates directory if it doesn't exist
 RUN mkdir -p /etc/nginx/certs
