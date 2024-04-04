@@ -3,15 +3,15 @@
 # ================ Start Services in Background ================
 echo "[INFO] Starting Prometheus..."
 # Start Prometheus in the background (adjust the command as needed)
-/etc/prometheus/prometheus.yml --config.file=/etc/prometheus/prometheus.yml &
+/etc/prometheus/prometheus.yaml --config.file=/etc/prometheus/prometheus.yaml &
 
 echo "[INFO] Starting Elasticsearch..."
 # Start Elasticsearch in the background (adjust the command as needed)
-/etc/elasticsearch/elasticsearch.yml &
+/etc/elasticsearch/elasticsearch.yaml &
 
 echo "[INFO] Starting Kibana..."
 # Start Kibana in the background (adjust the command as needed)
-/etc/kibana/kibana.yml &
+/etc/kibana/kibana.yaml &
 
 echo "[INFO] Starting Fluentd..."
 # Start Fluentd in the background (adjust the command as needed)
