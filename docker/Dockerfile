@@ -47,11 +47,6 @@ RUN apt-get update && apt-get install -y \
     tree \
     nginx \
     libnss3-tools \
-    prometheus \
-    td-agent \
-    elasticsearch \
-    kibana \
-    coredns \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -64,31 +59,6 @@ WORKDIR ${PROJECT_DIR}/rust
 
 # Install wasm-pack
 RUN cargo install wasm-pack
-
-# Configure Prometheus
-RUN mkdir -p /etc/prometheus
-COPY prometheus.yml /etc/prometheus/prometheus.yml
-RUN chown prometheus:prometheus /etc/prometheus/prometheus.yml
-
-# Configure Fluentd
-RUN mkdir -p /etc/td-agent
-COPY fluentd.conf /etc/td-agent/fluentd.conf
-RUN chown td-agent:td-agent /etc/td-agent/fluentd.conf
-
-# Configure ElasticSearch
-RUN mkdir -p /etc/elasticsearch
-COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
-RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yml
-
-# Configure Kibana
-RUN mkdir -p /etc/kibana
-COPY kibana.yml /etc/kibana/kibana.yml
-RUN chown kibana:kibana /etc/kibana/kibana.yml
-
-# Configure coredns
-RUN mkdir -p /etc/coredns
-COPY Corefile /etc/coredns/Corefile
-RUN chown coredns:coredns /etc/coredns/Corefile
 
 # Set up work directory for Python application
 WORKDIR /home/appuser/app
@@ -143,19 +113,12 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx
 RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
     chmod 600 /etc/nginx/certs/*.pem
 
-RUN chown nginx:nginx /etc/nginx/certs/*.csr && \
-    chmod 600 /etc/nginx/certs/*.csr
-
-# Expose Ports (Adjust as necessary) 
+# Expose ports
 EXPOSE 8888
 EXPOSE 5678
 EXPOSE 8080
 EXPOSE 443
 EXPOSE 80
-EXPOSE 9090  # Prometheus
-EXPOSE 9200  # Elasticsearch
-EXPOSE 5601  # Kibana 
-EXPOSE 24224 # Fluentd
 
 # Remove default Nginx configuration
 RUN rm /etc/nginx/sites-enabled/default
