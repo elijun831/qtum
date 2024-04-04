@@ -17,9 +17,6 @@ echo "[INFO] Starting Fluentd..."
 # Start Fluentd in the background (adjust the command as needed)
 /etc/td-agent/fluentd.conf -c /etc/td-agent/fluentd.conf &
 
-echo "[INFO] Starting Alertmanager..."
-/opt/alertmanager/alertmanager -config.file=/etc/alertmanager/alertmanager.yaml & # Execute Alertmanager
-
 # ================ Start Nginx ================
 echo "[INFO] Starting Nginx in foreground mode..."
 nginx -g "daemon off;"
