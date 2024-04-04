@@ -54,7 +54,6 @@ RUN apt-get update && apt-get install -y \
     coredns \
     ruby \
     ruby-dev \
-    alertmanager \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -149,16 +148,6 @@ RUN mkdir -p /etc/coredns
 COPY Corefile /etc/coredns/Corefile
 RUN chown coredns:coredns /etc/coredns/Corefile
 
-# Download & Configure Alertmanager
-WORKDIR /opt/alertmanager
-
-ENV ALERTMANAGER_VERSION 0.24.0
-RUN curl -L hhttps://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.freebsd-amd64.tar.gz | \
-    tar -xzf -
-RUN mv alertmanager-0.27.0.freebsd-amd64/* .
-RUN rm -rf alertmanager-0.27.0.freebsd-amd64
-COPY alertmanager.yaml /etc/alertmanager/alertmanager.yaml 
-
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888
 EXPOSE 5678
@@ -169,7 +158,6 @@ EXPOSE 9090  # Prometheus
 EXPOSE 9200  # Elasticsearch
 EXPOSE 5601  # Kibana 
 EXPOSE 24224 # Fluentd
-EXPOSE 9093  # Alertmanager 
 
 # Remove default Nginx configuration
 RUN rm /etc/nginx/sites-enabled/default
