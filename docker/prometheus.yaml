@@ -1,0 +1,23 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+# Scrape targets
+scrape_configs:
+  # Prometheus server itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["*.quantumworkspace.dev:9090"]
+
+  # JupyterLab
+  - job_name: "jupyterlab"
+    static_configs:
+      - targets: ["*.quantumworkspace.dev:8888"]
+
+  - job_name: "jupyterlab_lsp"
+    static_configs:
+      - targets: ["*.quantumworkspace.dev:8888/lsp"]
+
+  - job_name: "jupyterlab_system_monitor"
+    static_configs:
+      - targets: ["*.quantumworkspace.dev:8888/system-monitor"]
