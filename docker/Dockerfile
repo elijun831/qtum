@@ -54,6 +54,7 @@ RUN apt-get update && apt-get install -y \
     coredns \
     ruby \
     ruby-dev \
+    alertmanager \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -66,31 +67,6 @@ WORKDIR ${PROJECT_DIR}/rust
 
 # Install wasm-pack
 RUN cargo install wasm-pack
-
-# Configure Prometheus
-RUN mkdir -p /etc/prometheus
-COPY prometheus.yaml /etc/prometheus/prometheus.yaml
-RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
-
-# Configure Fluentd
-RUN mkdir -p /etc/td-agent
-COPY fluentd.conf /etc/td-agent/fluentd.conf
-RUN chown td-agent:td-agent /etc/td-agent/fluentd.conf
-
-# Configure ElasticSearch
-RUN mkdir -p /etc/elasticsearch
-COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
-RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
-
-# Configure Kibana
-RUN mkdir -p /etc/kibana
-COPY kibana.yaml /etc/kibana/kibana.yaml
-RUN chown kibana:kibana /etc/kibana/kibana.yaml
-
-# Configure coredns
-RUN mkdir -p /etc/coredns
-COPY Corefile /etc/coredns/Corefile
-RUN chown coredns:coredns /etc/coredns/Corefile
 
 # Set up work directory for Python application
 WORKDIR /home/appuser/app
@@ -148,6 +124,41 @@ RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
 RUN chown nginx:nginx /etc/nginx/certs/*.csr && \
     chmod 600 /etc/nginx/certs/*.csr
 
+# Configure Prometheus
+RUN mkdir -p /etc/prometheus
+COPY prometheus.yaml /etc/prometheus/prometheus.yaml
+RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
+
+# Configure Fluentd
+RUN mkdir -p /etc/td-agent
+COPY fluentd.conf /etc/td-agent/fluentd.conf
+RUN chown td-agent:td-agent /etc/td-agent/fluentd.conf
+
+# Configure ElasticSearch
+RUN mkdir -p /etc/elasticsearch
+COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
+RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
+
+# Configure Kibana
+RUN mkdir -p /etc/kibana
+COPY kibana.yaml /etc/kibana/kibana.yaml
+RUN chown kibana:kibana /etc/kibana/kibana.yaml
+
+# Configure coredns
+RUN mkdir -p /etc/coredns
+COPY Corefile /etc/coredns/Corefile
+RUN chown coredns:coredns /etc/coredns/Corefile
+
+# Download & Configure Alertmanager
+WORKDIR /opt/alertmanager
+
+ENV ALERTMANAGER_VERSION 0.24.0
+RUN curl -L hhttps://github.com/prometheus/alertmanager/releases/download/v0.27.0/alertmanager-0.27.0.freebsd-amd64.tar.gz | \
+    tar -xzf -
+RUN mv alertmanager-0.27.0.freebsd-amd64/* .
+RUN rm -rf alertmanager-0.27.0.freebsd-amd64
+COPY alertmanager.yaml /etc/alertmanager/alertmanager.yaml 
+
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888
 EXPOSE 5678
@@ -158,6 +169,7 @@ EXPOSE 9090  # Prometheus
 EXPOSE 9200  # Elasticsearch
 EXPOSE 5601  # Kibana 
 EXPOSE 24224 # Fluentd
+EXPOSE 9093  # Alertmanager 
 
 # Remove default Nginx configuration
 RUN rm /etc/nginx/sites-enabled/default
