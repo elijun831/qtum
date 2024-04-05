@@ -61,6 +61,7 @@ RUN apt-get update && apt-get install -y \
    ruby-dev \
    ntp \
    ntpdate \
+   ntpstat \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
