@@ -74,7 +74,12 @@ RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
 # Install Fluent-package
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-   apt-get update && apt-get upgrade -y \
+   apt-get update && apt-get upgrade
+
+# Create drift file directory (if it doesn't exist)
+RUN mkdir -p /var/lib/ntp
+COPY ntp.conf /etc/ntp.conf
+EXPOSE 123/udp
 
 # Configure Fluentd
 RUN mkdir -p /etc/td-agent
