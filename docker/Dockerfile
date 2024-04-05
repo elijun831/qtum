@@ -53,6 +53,7 @@ RUN apt-get update && apt-get install -y \
    coredns \
    ruby \
    ruby-dev \
+   ntp \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
