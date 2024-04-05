@@ -6,6 +6,12 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Copy custom hosts file to /etc/hosts
 COPY hosts /etc/hosts
 
+# Copy limits.conf file to /etc/security/limits.conf
+COPY limits.conf /etc/security/limits.conf
+
+# Copy sysctl.conf file to /etc/sysctl.conf
+COPY sysctl.conf /etc/sysctl.conf
+
 # Set environment variables
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
