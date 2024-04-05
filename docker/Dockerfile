@@ -1,6 +1,6 @@
 # Version 3.0.0
 # Base image
-FROM ubuntu:latest
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Copy custom hosts file to /etc/hosts
