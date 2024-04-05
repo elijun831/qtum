@@ -80,6 +80,16 @@ RUN mkdir -p /etc/prometheus
 COPY prometheus.yaml /etc/prometheus/prometheus.yaml
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
+# Enable ntp
+RUN sudo systemctl enable ntp \
+   sudo systemctl start ntp
+
+# COPY ntp.conf to /etc/ntp.conf
+COPY ntp.conf /etc/ntp.conf
+
+# Restart 
+RUN sudo service restart ntp
+
 # Install Fluent-package
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
    apt-get update && apt-get upgrade
