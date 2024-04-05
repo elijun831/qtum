@@ -72,6 +72,10 @@ RUN mkdir -p /etc/prometheus
 COPY prometheus.yaml /etc/prometheus/prometheus.yaml
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
+# Install Fluent-package
+RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
+   apt-get update && apt-get upgrade -y \
+
 # Configure Fluentd
 RUN mkdir -p /etc/td-agent
 COPY fluentd.conf /etc/td-agent/fluentd.conf
