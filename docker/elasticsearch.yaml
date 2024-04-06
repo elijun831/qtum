@@ -7,7 +7,7 @@ path.logs: /var/log/elasticsearch
 
 network.host: 0.0.0.0
 
-discovery.seed_hosts: ["localhost:9200"]
+discovery.seed_hosts: ["127.0.0.1", "localhost", "*.quantumworkspace.dev"]
 
 http.port: 9200
 http.cors.enabled: true
