@@ -1,7 +1,6 @@
 server.port: 5601
 server.host: "*.quantumworkspace.dev"
-elasticsearch.hosts: ["http://*.quantumworkspace.dev:9200"]
-kibana.index: ".kibana"
+elasticsearch.hosts: ["http://localhost:9200"]
 
 # Log Settings
 logging.quiet: false
