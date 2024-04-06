@@ -61,7 +61,6 @@ RUN apt-get update && apt-get install -y \
    ntp \
    ntpdate \
    ntpstat \
-   systemd-timesyncd \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -80,10 +79,6 @@ RUN mkdir -p /etc/prometheus
 COPY prometheus.yaml /etc/prometheus/prometheus.yaml
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
-# Activate NTP
-RUN sudo timedatectl set-ntp true \
-   sudo timedatectl set-ntp on
-
 # Enable ntp
 RUN sudo systemctl start ntp \
    sudo systemctl enable ntp
@@ -95,7 +90,7 @@ EXPOSE 123/udp
 
 # Restart to apply customized ntp settings 
 RUN sudo ufw allow 123/udp \
-   sudo service restart ntp
+   sudo systemctl restart ntp
 
 # Install Fluent-package
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
