@@ -80,6 +80,15 @@ RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13
 COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
 RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
 
+# Start Elasticsearch and generate an enrollment token for Kibana
+RUN cd elasticsearch-8.13.1 && \
+    bin/elasticsearch -d && \
+    bin/elasticsearch-create-enrollment-token -s kibana
+
+# Start Kibana and enter the enrollment token
+RUN sudo /bin/systemctl daemon-reload && \
+    sudo /bin/systemctl enable kibana.service
+
 # Enable ntp
 RUN sudo systemctl unmask ntp.service \ 
    && sudo systemctl start ntp.service \
