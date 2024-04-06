@@ -53,7 +53,6 @@ RUN apt-get update && apt-get install -y \
    python3-wheel \
    python3-distutils \
    prometheus \
-   td-agent \
    elasticsearch \
    kibana \
    coredns \
