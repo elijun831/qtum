@@ -84,7 +84,10 @@ RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
 RUN cd elasticsearch-8.13.1 && \
     bin/elasticsearch -d && \
     chown -R root:root /etc/elasticsearch/elasticsearch.yaml && \
-    bin/elasticsearch-create-enrollment-token -s kibana
+    bin/elasticsearch-create-enrollment-token -s kibana && \
+    groupadd -r elasticsearch && \
+    useradd -r -g elasticsearch elasticsearch && \
+    chown -R elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
 
 # Start Kibana and enter the enrollment token
 RUN sudo /bin/systemctl daemon-reload && \
