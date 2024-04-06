@@ -83,7 +83,7 @@ COPY kibana.yaml /etc/kibana/kibana.yaml
 EXPOSE 5601
 
 # Start Kibana using the CMD directive
-CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yml"]
+CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 
 # Copy ntp.conf to /etc/ntp.conf
 COPY ntp.conf /etc/ntp.conf
@@ -94,25 +94,13 @@ EXPOSE 123/udp
 # Start NTP daemon
 CMD ["ntpd", "-d"]
 
-# Install Fluent-package and congifure fluentd.conf
+# Install Fluent-package and configure fluentd.conf
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-   && apt-get update && apt-get upgrade \
+   && DEBIAN_FRONTEND=noninteractive apt-get update \
+   && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
    && mkdir -p /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
 RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
-
-# Download Kibana package, verify checksum. install Kibana, and configure kibana.yaml
-RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
-    && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
-    && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    && ./kibana-8.13.1-amd64.deb \
-    && rm kibana-8.13.1-amd64.deb \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-RUN mkdir -p /etc/kibana
-COPY kibana.yaml /etc/kibana/kibana.yaml
-RUN chown kibana:kibana /etc/kibana/kibana.yaml
 
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
 RUN mkdir -p /etc/nginx/certs
