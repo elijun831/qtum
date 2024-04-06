@@ -48,6 +48,10 @@ sympy = "*"
 voila = "*"
 requests = "*"
 jaeger-client = "*"
+elasticsearch = "*"
+kafka-python = "*"
+beautifulsoup4 = "*"
+
 
 [requires]
 python_version = "3.11"
