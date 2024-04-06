@@ -119,32 +119,23 @@ RUN mkdir -p /etc/coredns
 COPY Corefile /etc/coredns/Corefile
 RUN chown coredns:coredns /etc/coredns/Corefile
 
-# Create a directory to store the certificates
+# Create a directory to store the certificates (OpenSSL certificate & dhparam)
 RUN mkdir -p /etc/nginx/certs
-
-# OpenSSL certificate & dhparam generation script
 WORKDIR /etc/nginx/certs 
 
-# Create the certificates directory if it doesn't exist
+# Create the certificates directory if it doesn't exist; copy the script into the image
 RUN mkdir -p /etc/nginx/certs
-
-# Copy the script into the image
 COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 
-# Make the script executable
-RUN chmod +x /etc/nginx/certs/generate_certs.sh
+# Make the script executable and execute the script
+RUN chmod +x /etc/nginx/certs/generate_certs.sh \
+    /etc/nginx/certs/generate_certs.sh
 
-# Execute the script
-RUN /etc/nginx/certs/generate_certs.sh
-
-# Create Nginx user and group
-RUN groupadd -r nginx && useradd -r -g nginx nginx
-
-# Setting permissions and ownership
-RUN chown nginx:nginx /etc/nginx/certs/*.pem && \
-   chmod 600 /etc/nginx/certs/*.pem
-
-RUN chown nginx:nginx /etc/nginx/certs/*.csr && \
+# Create Nginx user and group; set permissions and ownership
+RUN groupadd -r nginx && useradd -r -g nginx nginx \
+   chown nginx:nginx /etc/nginx/certs/*.pem && \
+   chmod 600 /etc/nginx/certs/*.pem \
+   chown nginx:nginx /etc/nginx/certs/*.csr && \
    chmod 600 /etc/nginx/certs/*.csr
 
 # Expose Ports (Adjust as necessary) 
