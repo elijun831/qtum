@@ -98,9 +98,9 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
    apt-get update && apt-get upgrade
 
 # Configure Fluentd
-RUN mkdir -p /etc/td-agent
-COPY fluentd.conf /etc/td-agent/fluentd.conf
-RUN chown td-agent:td-agent /etc/td-agent/fluentd.conf
+RUN mkdir -p /etc/fluent-package
+COPY fluentd.conf /etc/fluent-package/fluentd.conf
+RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
 
 # Configure Kibana
 RUN mkdir -p /etc/kibana
