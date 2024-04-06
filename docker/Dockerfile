@@ -73,6 +73,11 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
+# Configure ElasticSearch
+RUN mkdir -p /etc/elasticsearch
+COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
+RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
+
 # Enable ntp
 RUN sudo systemctl unmask ntp.service \ 
    sudo systemctl start ntp.service \
@@ -96,11 +101,6 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
 RUN mkdir -p /etc/td-agent
 COPY fluentd.conf /etc/td-agent/fluentd.conf
 RUN chown td-agent:td-agent /etc/td-agent/fluentd.conf
-
-# Configure ElasticSearch
-RUN mkdir -p /etc/elasticsearch
-COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
-RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
 
 # Configure Kibana
 RUN mkdir -p /etc/kibana
