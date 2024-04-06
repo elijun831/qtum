@@ -78,4 +78,9 @@ networks:
     driver: bridge
 
 volumes:
-  es_data: {}
+  es_data:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/mnt/data/elasticsearch"
