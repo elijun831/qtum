@@ -54,14 +54,13 @@ RUN apt-get update && apt-get install -y \
    python3-distutils \
    ruby \
    ruby-dev \
-   ntp \
    ntpdate \
    ntpstat \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
-   $HOME/.cargo/bin/rustup update
+    $HOME/.cargo/bin/rustup update
 ENV PATH="/root/.cargo/bin:${PATH}"
 ENV PROJECT_DIR /usr/local/src/webapp
 RUN mkdir -p ${PROJECT_DIR}/rust
@@ -70,43 +69,30 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Download and configure ElasticSearch
-RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.1-linux-x86_64.tar.gz \
-    && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.1-linux-x86_64.tar.gz.sha512 \
-    && shasum -a 512 -c elasticsearch-8.13.1-linux-x86_64.tar.gz.sha512 \
-    && tar -xzf elasticsearch-8.13.1-linux-x86_64.tar.gz \
-    && cd elasticsearch-8.13.1 \
-    && mkdir -p /etc/elasticsearch
-COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
-RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
+# Install Kibana package, verify checksum, and install Kibana
+RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
+    && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
+    && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
+    && dpkg -i kibana-8.13.1-amd64.deb \
+    && rm kibana-8.13.1-amd64.deb
 
-# Start Elasticsearch and generate an enrollment token for Kibana
-RUN cd elasticsearch-8.13.1 && \
-    bin/elasticsearch -d && \
-    chown -R root:root /etc/elasticsearch/elasticsearch.yaml && \
-    bin/elasticsearch-create-enrollment-token -s kibana && \
-    groupadd -r elasticsearch && \
-    useradd -r -g elasticsearch elasticsearch && \
-    chown -R elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
+# Copy Kibana configuration file
+COPY kibana.yaml /etc/kibana/kibana.yaml
 
-# Start Kibana and enter the enrollment token
-RUN sudo /bin/systemctl daemon-reload && \
-    sudo /bin/systemctl enable kibana.service
+# Expose Kibana port (adjust as necessary)
+EXPOSE 5601
 
-# Enable ntp
-RUN sudo systemctl unmask ntp.service \ 
-   && sudo systemctl start ntp.service \
-   && sudo systemctl enable ntp.service \
-   && sudo systemctl start ntp
+# Start Kibana using the CMD directive
+CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yml"]
 
-# Create drift file directory (if it doesn't exist) and copy ntp.conf to /etc/ntp.conf
-RUN mkdir -p /var/lib/ntp
+# Copy ntp.conf to /etc/ntp.conf
 COPY ntp.conf /etc/ntp.conf
+
+# Expose NTP port
 EXPOSE 123/udp
 
-# Restart to apply customized ntp settings 
-RUN sudo ufw allow 123/udp \
-   sudo systemctl restart ntp
+# Start NTP daemon
+CMD ["ntpd", "-d"]
 
 # Install Fluent-package and congifure fluentd.conf
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
@@ -148,7 +134,7 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx \
    && chmod 600 /etc/nginx/certs/*.csr
 
 # Expose Ports (Adjust as necessary) 
-EXPOSE 8888 5678 8080 443 80 9090 9200 5601 24224 24225
+EXPOSE 8888 5678 8080 443 80 9090 9200 24224 24225
 
 # Remove default Nginx configuration
 RUN rm /etc/nginx/sites-enabled/default
