@@ -80,7 +80,10 @@ COPY prometheus.yaml /etc/prometheus/prometheus.yaml
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
 # Enable ntp
-RUN sudo systemctl start ntp \
+RUN sudo systemctl unmask ntp.service \ 
+   sudo systemctl start ntp.service \
+   sudo systemctl enable ntp.service \
+   sudo systemctl start ntp \
    sudo systemctl enable ntp
 
 # Create drift file directory (if it doesn't exist) and copy ntp.conf to /etc/ntp.conf
