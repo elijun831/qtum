@@ -83,6 +83,7 @@ RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
 # Start Elasticsearch and generate an enrollment token for Kibana
 RUN cd elasticsearch-8.13.1 && \
     bin/elasticsearch -d && \
+    chown -R root:root /etc/elasticsearch/elasticsearch.yaml && \
     bin/elasticsearch-create-enrollment-token -s kibana
 
 # Start Kibana and enter the enrollment token
