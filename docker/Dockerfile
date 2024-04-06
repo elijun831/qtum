@@ -80,6 +80,10 @@ RUN mkdir -p /etc/prometheus
 COPY prometheus.yaml /etc/prometheus/prometheus.yaml
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
+# Activate NTP
+RUN sudo timedatectl set-ntp true \
+   sudo timedatectl set-ntp on
+
 # Enable ntp
 RUN sudo systemctl start ntp \
    sudo systemctl enable ntp
