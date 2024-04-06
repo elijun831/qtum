@@ -98,7 +98,10 @@ CMD ["ntpd", "-d"]
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
    && DEBIAN_FRONTEND=noninteractive apt-get update \
    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-   && mkdir -p /etc/fluent-package
+   && groupadd -r fluent-package \
+   && useradd -r -g fluent-package fluent-package \
+   && mkdir -p /etc/fluent-package \
+   && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
 RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
 
@@ -107,18 +110,17 @@ RUN mkdir -p /etc/nginx/certs
 WORKDIR /etc/nginx/certs 
 
 # Create the certificates directory if it doesn't exist; copy the script into the image
-RUN mkdir -p /etc/nginx/certs
 COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 
 # Make the script executable and execute the script
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
-    /etc/nginx/certs/generate_certs.sh
+    && /etc/nginx/certs/generate_certs.sh
 
 # Create Nginx user and group; set permissions and ownership
 RUN groupadd -r nginx && useradd -r -g nginx nginx \
-   && chown nginx:nginx /etc/nginx/certs/*.pem && \
+   && chown nginx:nginx /etc/nginx/certs/*.pem \
    && chmod 600 /etc/nginx/certs/*.pem \
-   && chown nginx:nginx /etc/nginx/certs/*.csr && \
+   && chown nginx:nginx /etc/nginx/certs/*.csr \
    && chmod 600 /etc/nginx/certs/*.csr
 
 # Expose Ports (Adjust as necessary) 
