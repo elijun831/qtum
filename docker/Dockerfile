@@ -105,6 +105,9 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
 RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
 
+# Create directory for Elasticsearch data
+RUN mkdir -p /mnt/data/elasticsearch
+
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
 RUN mkdir -p /etc/nginx/certs
 WORKDIR /etc/nginx/certs 
