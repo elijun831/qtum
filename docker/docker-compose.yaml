@@ -45,7 +45,6 @@ services:
     links:
       - "elasticsearch"
     ports:
-      - "8080:8080"
       - "24224:24224"
       - "24225:24224"
       - "24224:24224/udp"
