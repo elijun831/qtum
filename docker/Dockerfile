@@ -52,9 +52,6 @@ RUN apt-get update && apt-get install -y \
    python3-setuptools \
    python3-wheel \
    python3-distutils \
-   elasticsearch \
-   kibana \
-   coredns \
    ruby \
    ruby-dev \
    ntp \
@@ -73,16 +70,21 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Configure ElasticSearch
-RUN mkdir -p /etc/elasticsearch
+# Download and configure ElasticSearch
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.1-linux-x86_64.tar.gz \
+    && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.1-linux-x86_64.tar.gz.sha512 \
+    && shasum -a 512 -c elasticsearch-8.13.1-linux-x86_64.tar.gz.sha512 \
+    && tar -xzf elasticsearch-8.13.1-linux-x86_64.tar.gz \
+    && cd elasticsearch-8.13.1 \
+    && mkdir -p /etc/elasticsearch
 COPY elasticsearch.yaml /etc/elasticsearch/elasticsearch.yaml
 RUN chown elasticsearch:elasticsearch /etc/elasticsearch/elasticsearch.yaml
 
 # Enable ntp
 RUN sudo systemctl unmask ntp.service \ 
-   sudo systemctl start ntp.service \
-   sudo systemctl enable ntp.service \
-   sudo systemctl start ntp
+   && sudo systemctl start ntp.service \
+   && sudo systemctl enable ntp.service \
+   && sudo systemctl start ntp
 
 # Create drift file directory (if it doesn't exist) and copy ntp.conf to /etc/ntp.conf
 RUN mkdir -p /var/lib/ntp
@@ -93,16 +95,22 @@ EXPOSE 123/udp
 RUN sudo ufw allow 123/udp \
    sudo systemctl restart ntp
 
-# Install Fluent-package
+# Install Fluent-package and congifure fluentd.conf
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-   apt-get update && apt-get upgrade
-
-# Configure Fluentd
-RUN mkdir -p /etc/fluent-package
+   && apt-get update && apt-get upgrade \
+   && mkdir -p /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
 RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
 
-# Configure Kibana
+# Download Kibana package, verify checksum. install Kibana, and configure kibana.yaml
+RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
+    && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
+    && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    && ./kibana-8.13.1-amd64.deb \
+    && rm kibana-8.13.1-amd64.deb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 RUN mkdir -p /etc/kibana
 COPY kibana.yaml /etc/kibana/kibana.yaml
 RUN chown kibana:kibana /etc/kibana/kibana.yaml
@@ -121,10 +129,10 @@ RUN chmod +x /etc/nginx/certs/generate_certs.sh \
 
 # Create Nginx user and group; set permissions and ownership
 RUN groupadd -r nginx && useradd -r -g nginx nginx \
-   chown nginx:nginx /etc/nginx/certs/*.pem && \
-   chmod 600 /etc/nginx/certs/*.pem \
-   chown nginx:nginx /etc/nginx/certs/*.csr && \
-   chmod 600 /etc/nginx/certs/*.csr
+   && chown nginx:nginx /etc/nginx/certs/*.pem && \
+   && chmod 600 /etc/nginx/certs/*.pem \
+   && chown nginx:nginx /etc/nginx/certs/*.csr && \
+   && chmod 600 /etc/nginx/certs/*.csr
 
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888 5678 8080 443 80 9090 9200 5601 24224 24225
