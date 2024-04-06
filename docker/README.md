@@ -24,7 +24,7 @@ cd quantumworkspace/docker
 
 3. Build the Docker image:
 ```
-(sudo) docker compose up -build
+(sudo) docker compose up --build
 ```
 
 4. After running the Docker container, you should see a URL in the terminal output that looks like this:
