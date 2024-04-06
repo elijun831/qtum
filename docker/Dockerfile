@@ -108,6 +108,34 @@ RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
 # Create directory for Elasticsearch data
 RUN mkdir -p /mnt/data/elasticsearch
 
+# Set up work directory for Python application
+WORKDIR /home/appuser/app
+
+# Copy Pipfile and Pipfile.lock
+COPY Pipfile Pipfile.lock /home/appuser/app/
+
+# Create and activate the virtual environment
+RUN python3.11 -m venv /venv
+ENV PATH="/venv/bin:${PATH}"
+RUN . /venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install pipenv
+
+# Install dependencies using pipenv
+RUN PIPENV_IGNORE_VIRTUALENVS=1 . /venv/bin/activate && pipenv install --deploy
+
+# Install Jupyter within the virtual environment
+RUN . /venv/bin/activate && pipenv run pip install jupyter notebook jupyterlab voila
+
+# Copy pre-configured Jupyter Notebook config
+COPY jupyter_notebook_config.py /home/appuser/.jupyter/jupyter_notebook_config.py
+
+# Generate Jupyter Notebook config
+RUN . /venv/bin/activate && jupyter notebook --generate-config -y
+
+# Modify Jupyter Notebook config
+RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
+
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
 RUN mkdir -p /etc/nginx/certs
 WORKDIR /etc/nginx/certs 
