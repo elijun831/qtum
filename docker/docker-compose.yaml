@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   web:
     build: ./
@@ -6,28 +8,18 @@ services:
       - mynetwork
     volumes:
       - /notebooks:/notebooks
-
-  quantumworkspace:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - "8888:8888"
-      - "5678:5678"
-    volumes:
-      - /notebooks
-    networks:
-      - mynetwork
     hostname: quantumworkspace
 
   elasticsearch:
-    image: elasticsearch:latest 
+    image: elasticsearch:8.13.0
     environment:
       discovery.type: single-node
     ports:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data 
+    networks:
+      - mynetwork
 
   fluentd:
     image: fluentd:latest
@@ -41,9 +33,11 @@ services:
       - "24224:24224"
       - "24225:24224"
       - "24224:24224/udp"
+    networks:
+      - mynetwork
 
   kibana:
-    image: kibana:latest 
+    image: kibana:8.13.0
     links:
       - "elasticsearch"
     ports:
@@ -52,6 +46,8 @@ services:
       ELASTICSEARCH_URL: http://elasticsearch:9200
     volumes:
       - ./kibana.yml:/usr/share/kibana/config/kibana.yml 
+    networks:
+      - mynetwork
 
   nginx:
     image: nginx:latest
@@ -70,7 +66,7 @@ services:
     networks:
       - mynetwork
     depends_on:
-      - quantumworkspace
+      - web
 
 networks:
   mynetwork:
