@@ -80,16 +80,17 @@ COPY prometheus.yaml /etc/prometheus/prometheus.yaml
 RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
 
 # Enable ntp
-RUN sudo systemctl enable ntp \
-   sudo systemctl start ntp
+RUN sudo systemctl start ntp \
+   sudo systemctl enable ntp
 
 # Create drift file directory (if it doesn't exist) and copy ntp.conf to /etc/ntp.conf
 RUN mkdir -p /var/lib/ntp
 COPY ntp.conf /etc/ntp.conf
 EXPOSE 123/udp
 
-# Restart 
-RUN sudo service restart ntp
+# Restart to apply customized ntp settings 
+RUN sudo ufw allow 123/udp \
+   sudo service restart ntp
 
 # Install Fluent-package
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
