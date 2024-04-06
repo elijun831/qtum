@@ -21,13 +21,6 @@ services:
       - mynetwork
     hostname: quantumworkspace
 
-  prometheus:
-    image: prom/prometheus:latest
-    ports:
-      - "9090:9090"
-    volumes:
-      - prometheus_data:/prometheus 
-
   elasticsearch:
     image: elasticsearch:latest 
     environment:
@@ -42,6 +35,7 @@ services:
     volumes:
       - ./fluentd/conf:/fluentd/etc
       - ./logs:/logs
+      - /var/log/nginx:/var/log/nginx 
     links:
       - "elasticsearch"
     ports:
