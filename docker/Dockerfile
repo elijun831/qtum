@@ -138,15 +138,16 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx \
    chmod 600 /etc/nginx/certs/*.csr
 
 # Expose Ports (Adjust as necessary) 
-EXPOSE 8888
-EXPOSE 5678
+EXPOSE 8888 # Jupyterlab
+EXPOSE 5678 # for debugging
 EXPOSE 8080
-EXPOSE 443
-EXPOSE 80
+EXPOSE 443 # Nginx
+EXPOSE 80 
 EXPOSE 9090 # Prometheus
 EXPOSE 9200 # Elasticsearch
 EXPOSE 5601 # Kibana 
 EXPOSE 24224 # Fluentd
+EXPOSE 24225 # Fluentd
 
 # Remove default Nginx configuration
 RUN rm /etc/nginx/sites-enabled/default
