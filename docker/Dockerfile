@@ -107,11 +107,6 @@ RUN mkdir -p /etc/kibana
 COPY kibana.yaml /etc/kibana/kibana.yaml
 RUN chown kibana:kibana /etc/kibana/kibana.yaml
 
-# Configure coredns
-RUN mkdir -p /etc/coredns
-COPY Corefile /etc/coredns/Corefile
-RUN chown coredns:coredns /etc/coredns/Corefile
-
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
 RUN mkdir -p /etc/nginx/certs
 WORKDIR /etc/nginx/certs 
@@ -132,16 +127,7 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx \
    chmod 600 /etc/nginx/certs/*.csr
 
 # Expose Ports (Adjust as necessary) 
-EXPOSE 8888 # Jupyterlab
-EXPOSE 5678 # for debugging
-EXPOSE 8080
-EXPOSE 443 # Nginx
-EXPOSE 80 
-EXPOSE 9090 # Prometheus
-EXPOSE 9200 # Elasticsearch
-EXPOSE 5601 # Kibana 
-EXPOSE 24224 # Fluentd
-EXPOSE 24225 # Fluentd
+EXPOSE 8888 5678 8080 443 80 9090 9200 5601 24224 24225
 
 # Remove default Nginx configuration
 RUN rm /etc/nginx/sites-enabled/default
