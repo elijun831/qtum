@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   web:
     build: ./
@@ -27,24 +28,26 @@ services:
     volumes:
       - prometheus_data:/prometheus 
 
-  fluentd:
-    build: ./fluentd
-    volumes:
-      - ./fluentd/conf:/fluentd/etc
-    links:
-      - "elasticsearch"
-    ports:
-      - "24224:24224"
-      - "24224:24224/udp"
-
   elasticsearch:
     image: elasticsearch:latest 
-    expose:
-      - "9200"
+    environment:
+      discovery.type: single-node
     ports:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data 
+
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+      - ./logs:/logs
+    links:
+      - "elasticsearch"
+    ports:
+      - "8080:8080"
+      - "24224:24224"
+      - "24224:24224/udp"
 
   kibana:
     image: kibana:latest 
@@ -52,6 +55,8 @@ services:
       - "elasticsearch"
     ports:
       - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     volumes:
       - ./kibana.yml:/usr/share/kibana/config/kibana.yml 
 
