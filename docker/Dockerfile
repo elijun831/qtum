@@ -52,7 +52,6 @@ RUN apt-get update && apt-get install -y \
    python3-setuptools \
    python3-wheel \
    python3-distutils \
-   prometheus \
    elasticsearch \
    kibana \
    coredns \
@@ -74,17 +73,11 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Configure Prometheus
-RUN mkdir -p /etc/prometheus
-COPY prometheus.yaml /etc/prometheus/prometheus.yaml
-RUN chown prometheus:prometheus /etc/prometheus/prometheus.yaml
-
 # Enable ntp
 RUN sudo systemctl unmask ntp.service \ 
    sudo systemctl start ntp.service \
    sudo systemctl enable ntp.service \
-   sudo systemctl start ntp \
-   sudo systemctl enable ntp
+   sudo systemctl start ntp
 
 # Create drift file directory (if it doesn't exist) and copy ntp.conf to /etc/ntp.conf
 RUN mkdir -p /var/lib/ntp
