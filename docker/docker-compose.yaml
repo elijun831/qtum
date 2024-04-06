@@ -7,7 +7,7 @@ services:
     networks:
       - mynetwork
     volumes:
-      - /notebooks:/notebooks 
+      - /notebooks:/notebooks
 
   quantumworkspace:
     build:
@@ -17,7 +17,7 @@ services:
       - "8888:8888"
       - "5678:5678"
     volumes:
-      - /notebooks:/notebooks
+      - /notebooks
     networks:
       - mynetwork
     hostname: quantumworkspace
