@@ -12,7 +12,7 @@ services:
     image: elasticsearch:8.13.0
     volumes:
       - ./elasticsearch.yaml:/usr/share/elasticsearch/config/elasticsearch.yaml  
-      - es_data:/usr/share/elasticsearch/data 
+      #- es_data:/usr/share/elasticsearch/data 
     environment:
       discovery.type: single-node
     ports:
