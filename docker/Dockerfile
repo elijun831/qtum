@@ -43,8 +43,6 @@ RUN apt-get update && apt-get install -y \
    zlib1g-dev \
    bash \
    tree \
-   nginx \
-   libnss3-tools \
    python3.11 \
    python3.11-venv \
    python3-apt \
@@ -141,14 +139,17 @@ RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/
 
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
 RUN mkdir -p /etc/nginx/certs
-WORKDIR /etc/nginx/certs 
-
-# Create the certificates directory if it doesn't exist; copy the script into the image
+WORKDIR /etc/nginx/certs
 COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
-
-# Make the script executable and execute the script
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
     && /etc/nginx/certs/generate_certs.sh
+
+# Nginx Installation and Configuration
+RUN apt-get update && apt-get install -y nginx libnss3-tools 
+    && rm /etc/nginx/sites-enabled/default
+COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
+COPY nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY ./nginx.conf /etc/nginx/nginx.conf
 
 # Create Nginx user and group; set permissions and ownership
 RUN groupadd -r nginx && useradd -r -g nginx nginx \
@@ -160,38 +161,22 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx \
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888 5678 8080 443 80 9090 9200 24224 24225
 
-# Remove default Nginx configuration
-RUN rm /etc/nginx/sites-enabled/default
+# Create non-root user for security
+RUN adduser -u 5678 --disabled-password --gecos "" appuser
+USER appuser
 
-# Copy custom Nginx configuration to /etc/nginx/conf.d/
-COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
-COPY nginx.conf /etc/nginx/conf.d/nginx.conf
-COPY ./nginx.conf /etc/nginx/nginx.conf
+# Notebooks Directory
+RUN mkdir -p /notebooks
+WORKDIR /notebooks
+VOLUME /notebooks 
+COPY --chown=appuser:appuser . /notebooks 
 
 # Set up work directory
 WORKDIR /app
 
-# Create a directory for notebooks
-RUN mkdir -p /notebooks
+# Ensure Permissions
+RUN chmod -R 755 /app 
 
-# Specify the directory as a volume
-VOLUME /notebooks
-
-# Create non-root user for security
-RUN adduser -u 5678 --disabled-password --gecos "" appuser
-
-# Change ownership of the notebooks directory to appuser
-RUN chown -R appuser:appuser /notebooks
-
-# Copy startup script
-COPY start.sh /start.sh
-
-# Switch to root
-USER root
-
-# Change permissions of the directories to ensure appuser can write to them
-RUN chmod -R 755 /app && chmod -R 755 /notebooks
-RUN chmod +x /start.sh
-
-# Start JupyterLab
-ENTRYPOINT ["/bin/bash", "/start.sh"]
+# Configure Supervisord and start processes with it 
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
