@@ -14,8 +14,8 @@ services:
       discovery.type: single-node
     ports:
       - "9200:9200"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data 
+    #volumes:
+      #- es_data:/usr/share/elasticsearch/data 
     networks:
       - mynetwork
 
@@ -23,16 +23,18 @@ services:
     image: fluentd:latest
     volumes:
       - ./fluentd/conf:/fluentd/etc
-      - ./logs:/fluentd/logs
+      #- ./logs:/fluentd/logs
       - /var/log/nginx:/var/log/nginx 
-    links:
-      - "elasticsearch"
+    #links:
+      #- "elasticsearch"
     ports:
       - "24224:24224"
-      - "24225:24224"
+      #- "24225:24224"
       - "24224:24224/udp"
     networks:
       - mynetwork
+    depends_on:
+      - elasticsearch
 
   kibana:
     image: kibana:8.13.0
@@ -70,11 +72,11 @@ networks:
   mynetwork:
     driver: bridge
 
-volumes:
-  es_data:
-    driver: local
-    driver_opts:
-      type: "none"
-      o: "bind"
-      device: "/mnt/data/elasticsearch"
+#volumes:
+  #es_data:
+    #driver: local
+    #driver_opts:
+      #type: "none"
+      #o: "bind"
+      #device: "/mnt/data/elasticsearch"
 
