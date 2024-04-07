@@ -154,5 +154,5 @@ WORKDIR /app
 RUN chmod -R 755 /app
 
 # Configure Supervisord and start processes with it 
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+COPY start.sh /start.sh
+ENTRYPOINT ["/bin/bash", "/start.sh"]
