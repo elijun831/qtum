@@ -13,7 +13,7 @@ services:
       - ./logs:/logs
     user:
       - "appuser"
-      - "root"
+      # - "root"
     environment:
       - DEBUG=1
       - JUPYTER_PORT=8888
