@@ -3,13 +3,9 @@
 FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Copy custom hosts file to /etc/hosts
+# Copy configuration files
 COPY hosts /etc/hosts
-
-# Copy limits.conf file to /etc/security/limits.conf
 COPY limits.conf /etc/security/limits.conf
-
-# Copy sysctl.conf file to /etc/sysctl.conf
 COPY sysctl.conf /etc/sysctl.conf
 
 # Set environment variables
@@ -68,74 +64,57 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Install Supervisord, create supervisord configuration directory, and copy supervisord.conf file
-RUN mkdir -p /etc/supervisor/conf.d
+# Install and configure Supervisord
+RUN apt-get update && apt-get install supervisor \
+    && mkdir -p /etc/supervisor/conf.d
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-# Install Kibana package, verify checksum, and install Kibana
+# Install, configure, and start Kibana
 RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
     && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
     && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
     && dpkg -i kibana-8.13.1-amd64.deb \
     && rm kibana-8.13.1-amd64.deb
-
-# Copy Kibana configuration file and expose Kibana port (adjust as necessary)
 COPY kibana.yaml /etc/kibana/kibana.yaml
 EXPOSE 5601
-
-# Start Kibana using the CMD directive
 CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 
-# Copy ntp.conf to /etc/ntp.conf
+# Install, configure, and start NTP service 
 COPY ntp.conf /etc/ntp.conf
-
-# Expose NTP port
 EXPOSE 123/udp
-
-# Start NTP daemon
 CMD ["ntpd", "-d"]
 
-# Install Fluent-package and configure fluentd.conf
+# Install and configure Fluentd
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-   && DEBIAN_FRONTEND=noninteractive apt-get update \
-   && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-   && groupadd -r fluent-package \
-   && useradd -r -g fluent-package fluent-package \
-   && mkdir -p /etc/fluent-package \
-   && chown fluent-package:fluent-package /etc/fluent-package
+    && DEBIAN_FRONTEND=noninteractive apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+    && groupadd -r fluent-package \
+    && useradd -r -g fluent-package fluent-package \
+    && mkdir -p /etc/fluent-package \
+    && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
 RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
 
 # Create directory for Elasticsearch data
 RUN mkdir -p /mnt/data/elasticsearch
 
-# Set up work directory for Python application
+# Set up work directory for Python application, copy Pipfile and Pipfile.lock, amd create and activate the virtual environment
 WORKDIR /home/appuser/app
-
-# Copy Pipfile and Pipfile.lock
 COPY Pipfile Pipfile.lock /home/appuser/app/
-
-# Create and activate the virtual environment
 RUN python3.11 -m venv /venv
 ENV PATH="/venv/bin:${PATH}"
-RUN . /venv/bin/activate && \
-    pip install --upgrade pip && \
-    pip install pipenv
-
-# Install dependencies using pipenv
-RUN PIPENV_IGNORE_VIRTUALENVS=1 . /venv/bin/activate && pipenv install --deploy
-
-# Install Jupyter within the virtual environment
-RUN . /venv/bin/activate && pipenv run pip install jupyter notebook jupyterlab voila
-
-# Copy pre-configured Jupyter Notebook config
+RUN . /venv/bin/activate \
+    && pip install --upgrade pip \
+    && pip install pipenv
+RUN PIPENV_IGNORE_VIRTUALENVS=1 . /venv/bin/activate \
+    && pipenv install --deploy
+RUN . /venv/bin/activate \
+    && pipenv run pip install jupyter notebook jupyterlab voila
 COPY jupyter_notebook_config.py /home/appuser/.jupyter/jupyter_notebook_config.py
 
-# Generate Jupyter Notebook config
-RUN . /venv/bin/activate && jupyter notebook --generate-config -y
-
-# Modify Jupyter Notebook config
-RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
+# Generate and modify Jupyter Notebook config
+RUN . /venv/bin/activate && jupyter notebook --generate-config -y \
+    && mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
 
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
 RUN mkdir -p /etc/nginx/certs
@@ -165,16 +144,14 @@ EXPOSE 8888 5678 8080 443 80 9090 9200 24224 24225
 RUN adduser -u 5678 --disabled-password --gecos "" appuser
 USER appuser
 
-# Notebooks Directory
+# Set up notebooks directory
 RUN mkdir -p /notebooks
 WORKDIR /notebooks
 VOLUME /notebooks 
 COPY --chown=appuser:appuser . /notebooks 
 
-# Set up work directory
+# Set up work directory and ensure permissions
 WORKDIR /app
-
-# Ensure Permissions
 RUN chmod -R 755 /app 
 
 # Configure Supervisord and start processes with it 
