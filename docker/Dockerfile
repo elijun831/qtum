@@ -76,10 +76,8 @@ RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.de
     && dpkg -i kibana-8.13.1-amd64.deb \
     && rm kibana-8.13.1-amd64.deb
 
-# Copy Kibana configuration file
+# Copy Kibana configuration file and expose Kibana port (adjust as necessary)
 COPY kibana.yaml /etc/kibana/kibana.yaml
-
-# Expose Kibana port (adjust as necessary)
 EXPOSE 5601
 
 # Start Kibana using the CMD directive
