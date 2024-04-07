@@ -145,7 +145,7 @@ RUN adduser -u 5678 --disabled-password --gecos "" appuser
 WORKDIR /notebooks
 RUN mkdir -p /notebooks \
     && chown -R appuser:appuser /notebooks
-USER appuser
+USER root
 COPY --chown=appuser:appuser . /notebooks
 VOLUME /notebooks
 
