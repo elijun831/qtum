@@ -142,17 +142,16 @@ EXPOSE 8888 5678 8080 443 80 9090 9200 24224 24225
 
 # Create non-root user for security
 RUN adduser -u 5678 --disabled-password --gecos "" appuser
-USER appuser
-
-# Set up notebooks directory
-RUN mkdir -p /notebooks
 WORKDIR /notebooks
-VOLUME /notebooks 
-COPY --chown=appuser:appuser . /notebooks 
+RUN mkdir -p /notebooks \
+    && chown -R appuser:appuser /notebooks
+USER appuser
+COPY --chown=appuser:appuser . /notebooks
+VOLUME /notebooks
 
 # Set up work directory and ensure permissions
 WORKDIR /app
-RUN chmod -R 755 /app 
+RUN chmod -R 755 /app
 
 # Configure Supervisord and start processes with it 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
