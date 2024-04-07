@@ -124,7 +124,7 @@ RUN chmod +x /etc/nginx/certs/generate_certs.sh \
     && /etc/nginx/certs/generate_certs.sh
 
 # Nginx Installation and Configuration
-RUN apt-get update && apt-get install -y nginx libnss3-tools 
+RUN apt-get update && apt-get install -y nginx libnss3-tools \
     && rm /etc/nginx/sites-enabled/default
 COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
