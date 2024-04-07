@@ -56,6 +56,7 @@ RUN apt-get update && apt-get install -y \
    ruby-dev \
    ntpdate \
    ntpstat \
+   supervisor \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -68,6 +69,10 @@ WORKDIR ${PROJECT_DIR}/rust
 
 # Install wasm-pack
 RUN cargo install wasm-pack
+
+# Install Supervisord, create supervisord configuration directory, and copy supervisord.conf file
+RUN mkdir -p /etc/supervisor/conf.d
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Install Kibana package, verify checksum, and install Kibana
 RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
