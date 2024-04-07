@@ -96,7 +96,9 @@ COPY fluentd.conf /etc/fluent-package/fluentd.conf
 RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
 
 # Create directory for Elasticsearch data
-RUN mkdir -p /mnt/data/elasticsearch
+USER root
+RUN mkdir -p /mnt/data/elasticsearch \
+    && chown 1000:1000 /mnt/data/elasticsearch
 
 # Set up work directory for Python application, copy Pipfile and Pipfile.lock, amd create and activate the virtual environment
 WORKDIR /home/appuser/app
