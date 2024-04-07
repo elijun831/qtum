@@ -13,12 +13,12 @@ services:
     volumes:
       - ./elasticsearch.yaml:/usr/share/elasticsearch/config/elasticsearch.yaml  
       #- es_data:/usr/share/elasticsearch/data 
+    environment:
+      discovery.type: single-node
     ports:
       - "9200:9200"
     networks:
       - mynetwork
-    environment:
-      discovery.type: single-node
     #depends_on:
     #restart: no
 
@@ -28,13 +28,13 @@ services:
       - ./fluentd.conf:/fluentd/etc/fluentd.conf  
       #- ./logs:/fluentd/logs
       - /var/log/nginx:/var/log/nginx 
+    #environment:
     ports:
       - "24224:24224"
       - "24225:24224"
       - "24224:24224/udp"
     networks:
       - mynetwork
-    #environment:
     depends_on:
       - elasticsearch
     #restart: no
@@ -43,12 +43,12 @@ services:
     image: kibana:8.13.0
     volumes:
       - ./kibana.yaml:/usr/share/kibana/config/kibana.yaml 
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     ports:
       - "5601:5601"
     networks:
       - mynetwork
-    environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
     depends_on:
       - elasticsearch
     #restart: no
@@ -57,6 +57,11 @@ services:
     image: nginx:latest
     volumes:
       - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf
+    environment:
+      - NGX_HTTP_PORT=80
+      - NGX_HTTPS_PORT=443
+      - JUPYTER_HOST=web
+      - JUPYTER_PORT=8888
     ports:
       - "8080:8080"
       - "8443:443"
@@ -64,11 +69,6 @@ services:
       - "80:80"
     networks:
       - mynetwork
-    environment:
-      - NGX_HTTP_PORT=80
-      - NGX_HTTPS_PORT=443
-      - JUPYTER_HOST=web
-      - JUPYTER_PORT=8888
     depends_on:
       - web
     #restart: no
