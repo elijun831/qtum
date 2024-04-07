@@ -23,18 +23,19 @@ services:
     image: fluentd:latest
     volumes:
       - ./fluentd/conf:/fluentd/etc
-      #- ./logs:/fluentd/logs
+      - ./logs:/fluentd/logs
       - /var/log/nginx:/var/log/nginx 
-    #links:
-      #- "elasticsearch"
+    links:
+      - "elasticsearch"
     ports:
       - "24224:24224"
-      #- "24225:24224"
+      - "24225:24224"
       - "24224:24224/udp"
     networks:
       - mynetwork
     depends_on:
       - elasticsearch
+    restart: no
 
   kibana:
     image: kibana:8.13.0
