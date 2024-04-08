@@ -125,6 +125,9 @@ COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
     && /etc/nginx/certs/generate_certs.sh
 
+# Set domains.ext as an environment variable
+ENV DOMAINS_EXT domains.ext
+
 # Nginx Installation and Configuration
 RUN apt-get update && apt-get install -y nginx libnss3-tools \
     && rm /etc/nginx/sites-enabled/default
