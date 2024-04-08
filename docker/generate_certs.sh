@@ -5,7 +5,7 @@ cd /etc/nginx/certs
 
 # --- Root CA certificate generation ---
 openssl genrsa -out Root_CA.key 2048
-openssl req -x509 -new -nodes -key Root_CA.key -sha256 -days 1024 -out Root_CA.pem -subj "/C=US/ST=Boston/L=Gangnam/O=My Organization/OU=IT Department/CN=My Root CA"
+openssl req -x509 -new -nodes -key Root_CA.key -sha256 -days 1024 -out Root_CA.pem -subj "/C=US/ST=Massachusetts/L=Boston/CN=EliJun"
 
 # --- Server certificate generation ---
 openssl genrsa -out _wildcard.quantumworkspace.dev+3-key.pem 4096
