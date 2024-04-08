@@ -4,15 +4,15 @@
 cd /etc/nginx/certs
 
 # --- Root CA certificate generation ---
-openssl genrsa -out Root_CA.key 2048
-openssl req -x509 -new -nodes -key Root_CA.key -sha256 -days 1024 -out Root_CA.pem -subj "/C=US/ST=Massachusetts/L=Boston/CN=EliJun"
+openssl genrsa -out Root_CA.key 4096
+openssl req -x509 -new -nodes -key Root_CA.key -sha256 -days 365 -out Root_CA.pem -subj "/C=US/ST=Massachusetts/L=Boston/CN=EliJun"
 
 # --- Server certificate generation ---
 openssl genrsa -out _wildcard.quantumworkspace.dev+3-key.pem 4096
 openssl req -new -key _wildcard.quantumworkspace.dev+3-key.pem -out _wildcard.quantumworkspace.dev+3.csr -subj "/CN=*.quantumworkspace.dev" -config <( \
 cat <<-EOF \
 [req]
-default_bits = 2048
+default_bits = 4096
 prompt = no
 default_md = sha256
 distinguished_name = dn
