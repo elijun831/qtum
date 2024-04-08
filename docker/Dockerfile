@@ -138,6 +138,10 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx \
    && chmod 600 /etc/nginx/certs/*.pem \
    && chown nginx:nginx /etc/nginx/certs/*.csr \
    && chmod 600 /etc/nginx/certs/*.csr
+   && chown nginx:nginx /etc/nginx/certs/*.key \
+   && chmod 600 /etc/nginx/certs/*.key
+   && chown nginx:nginx /etc/nginx/certs/*.crt \
+   && chmod 600 /etc/nginx/certs/*.crt
 
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888 5678 8080 443 80 9090 9200 24224 24225
