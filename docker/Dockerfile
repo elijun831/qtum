@@ -119,14 +119,13 @@ RUN . /venv/bin/activate && jupyter notebook --generate-config -y \
     && mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
 
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
+# Copy domains.ext for use in Nginx and certificate generation 
 RUN mkdir -p /etc/nginx/certs
+COPY domains.ext /etc/nginx/certs/domains.ext 
 WORKDIR /etc/nginx/certs
 COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
-    && /etc/nginx/certs/generate_certs.sh
-
-# Set domains.ext as an environment variable
-ENV DOMAINS_EXT domains.ext
+  && /etc/nginx/certs/generate_certs.sh
 
 # Nginx Installation and Configuration
 RUN apt-get update && apt-get install -y nginx libnss3-tools \
