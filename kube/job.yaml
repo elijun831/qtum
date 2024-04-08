@@ -9,6 +9,6 @@ spec:
     spec:
       containers:
       - name: quantumworkspace
-        image: elijun831/quantumworkspace:2.0.4
+        image: elijun831/quantumworkspace:3.0.0
         command: ["/bin/bash", "/start.sh"]
       restartPolicy: Never
