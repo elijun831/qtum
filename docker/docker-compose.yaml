@@ -55,7 +55,7 @@ services:
   nginx:
     image: nginx:latest
     volumes:
-      - ./certs:/etc/nginx/certs
+      #- ./certs:/etc/nginx/certs
       - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf
     environment:
       - NGX_HTTP_PORT=${NGINX_HTTP_PORT}
