@@ -137,9 +137,9 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx \
    && chown nginx:nginx /etc/nginx/certs/*.pem \
    && chmod 600 /etc/nginx/certs/*.pem \
    && chown nginx:nginx /etc/nginx/certs/*.csr \
-   && chmod 600 /etc/nginx/certs/*.csr
+   && chmod 600 /etc/nginx/certs/*.csr \
    && chown nginx:nginx /etc/nginx/certs/*.key \
-   && chmod 600 /etc/nginx/certs/*.key
+   && chmod 600 /etc/nginx/certs/*.key \
    && chown nginx:nginx /etc/nginx/certs/*.crt \
    && chmod 600 /etc/nginx/certs/*.crt
 
