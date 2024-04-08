@@ -11,12 +11,12 @@ services:
   elasticsearch:
     image: elasticsearch:8.13.0
     volumes:
-      - ./elasticsearch.yaml:/usr/share/elasticsearch/config/elasticsearch.yaml  
-      #- es_data:/usr/share/elasticsearch/data 
+      - ./elasticsearch.yaml:/usr/share/elasticsearch/config/elasticsearch.yaml
+      - es_data:/usr/share/elasticsearch/data
     environment:
       discovery.type: single-node
     ports:
-      - "${ES_PORT}:${ES_PORT}" 
+      - "${ES_PORT}:${ES_PORT}"
     networks:
       - mynetwork
     #depends_on:
@@ -25,9 +25,9 @@ services:
   fluentd:
     image: fluentd:latest
     volumes:
-      - ./fluentd.conf:/fluentd/etc/fluentd.conf  
-      #- ./logs:/fluentd/logs
-      - /var/log/nginx:/var/log/nginx 
+      - ./fluentd.conf:/fluentd/etc/fluentd.conf
+      - ./logs:/fluentd/logs
+      - /var/log/nginx:/var/log/nginx
     #environment:
     ports:
       - "${FLUENTD_PORT}:${FLUENTD_PORT}"
@@ -41,7 +41,7 @@ services:
   kibana:
     image: kibana:8.13.0
     volumes:
-      - ./kibana.yaml:/usr/share/kibana/config/kibana.yaml 
+      - ./kibana.yaml:/usr/share/kibana/config/kibana.yaml
     environment:
       ELASTICSEARCH_URL: http://elasticsearch:9200
     ports:
@@ -63,9 +63,9 @@ services:
       - JUPYTER_HOST=web
       - JUPYTER_PORT=${JUPYTER_PORT}
     ports:
-      - "${NGINX_HOST_PORT}:8080" 
+      - "${NGINX_HOST_PORT}:8080"
       - "${NGINX_HTTPS_PORT}:443"
-      - "443:443" 
+      - "443:443"
       - "80:80"
     networks:
       - mynetwork
@@ -77,11 +77,11 @@ networks:
   mynetwork:
     driver: bridge
 
-#volumes:
-  #es_data:
-    #driver: local
-    #driver_opts:
-      #type: "none"
-      #o: "bind"
-      #device: "/mnt/data/elasticsearch"
+volumes:
+  es_data:
+    driver: local
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "/mnt/data/elasticsearch"
 
