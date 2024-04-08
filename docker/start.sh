@@ -7,11 +7,12 @@ echo "[INFO] Starting Elasticsearch..."
 
 echo "[INFO] Starting Fluentd..."
 # Start Fluentd in the background (adjust the command as needed)
-/etc/td-agent/fluentd.conf -c /etc/td-agent/fluentd.conf &
+/etc/fluent-package/fluentd.conf -c /etc/fluent-package/fluentd.conf &
 
 echo "[INFO] Starting Kibana..."
 # Start Kibana in the background (adjust the command as needed)
 /etc/kibana/kibana.yaml &
+
 # ================ Start Nginx ================
 echo "[INFO] Starting Nginx in foreground mode..."
 nginx -g "daemon off;"
