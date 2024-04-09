@@ -145,12 +145,11 @@ RUN systemctl --now enable nginx \
    && systemctl start nginx 
    
 RUN groupadd -r nginx && useradd -r -g nginx nginx \
-    && chown nginx:nginx /etc/nginx/conf.d/jupyter.conf \
-    && chmod 660 /etc/nginx/conf.d/jupyter.conf \
-    && chown nginx:nginx /etc/nginx/conf.d/nginx.conf \
-    && chmod 660 /etc/nginx/conf.d/nginx.conf \
-    && chown nginx:nginx /etc/nginx/nginx.conf \
-    && chmod 660 /etc/nginx/nginx.conf
+    && chmod 755 /etc/nginx \
+    && chmod 755 /etc/nginx/* \
+    && chown -R nginx:nginx /etc/nginx \
+    && chmod 644 /etc/nginx/*.conf \
+    && chmod 644 /etc/nginx/conf.d/*.conf 
 
 COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
@@ -160,13 +159,14 @@ RUN nginx -t && systemctl restart nginx
 
 # Create Nginx user and group; set permissions and ownership
 RUN chown nginx:nginx /etc/nginx/certs/*.pem \
-   && chmod 600 /etc/nginx/certs/*.pem \
+   && chmod 700 /etc/nginx/certs \
+   && chmod 400 /etc/nginx/certs/*.pem \
    && chown nginx:nginx /etc/nginx/certs/*.csr \
-   && chmod 600 /etc/nginx/certs/*.csr \
+   && chmod 400 /etc/nginx/certs/*.csr \
    && chown nginx:nginx /etc/nginx/certs/*.key \
-   && chmod 600 /etc/nginx/certs/*.key \
+   && chmod 400 /etc/nginx/certs/*.key \
    && chown nginx:nginx /etc/nginx/certs/*.crt \
-   && chmod 600 /etc/nginx/certs/*.crt
+   && chmod 400 /etc/nginx/certs/*.crt
 
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888 5678 8080 443 80 9090 9200 24224 24225
