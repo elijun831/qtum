@@ -137,8 +137,8 @@ RUN curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
    && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
    && mkdir /etc/apt/sources.list.d/nginx.list
 COPY nginx.list /etc/apt/sources.list.d/nginx.list
-   && apt-get update \
-   && sudo apt-get install nginx
+RUN apt-get update \
+   && sudo apt-get install -y nginx
    && cp /etc/nginx/sites-enabled default /etc/nginx/conf.d/default/conf
    && systemctl enable nginx
    && systemctl start nginx
