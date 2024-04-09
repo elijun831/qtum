@@ -134,13 +134,16 @@ RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release
    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
    http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
    | tee /etc/apt/sources.list.d/nginx.list \
-   && apt-get update && apt-get install -y nginx
+   && apt-get update && apt-get install -y nginx \
+   && rm /etc/nginx/nginx.conf
 RUN systemctl --now enable nginx \
    && systemctl start nginx 
 
 COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
+
+RUN nginx -t && systemctl restart nginx
 
 # Create Nginx user and group; set permissions and ownership
 RUN groupadd -r nginx && useradd -r -g nginx nginx \
