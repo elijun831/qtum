@@ -7,7 +7,7 @@ echo "[INFO] Starting Elasticsearch..."
 
 echo "[INFO] Starting Fluentd..."
 # Start Fluentd in the background (adjust the command as needed)
-./fluentd.conf -c /etc/fluent-package/fluentd.conf &
+./fluentd.conf &
 
 echo "[INFO] Starting Kibana..."
 # Start Kibana in the background (adjust the command as needed)
