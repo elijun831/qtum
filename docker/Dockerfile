@@ -132,15 +132,14 @@ RUN apt-get update && apt-get install -y nginx libnss3-tools \
     && rm /etc/nginx/sites-enabled/default \
     && apt-get update && apt-get install -y gnupg2 ca-certificates lsb-release ubuntu-keyring apt-transport-https \
     && apt update
-RUN curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor \
-    | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null
-   && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg
+RUN curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
+   && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg \
    && mkdir /etc/apt/sources.list.d/nginx.list
 COPY nginx.list /etc/apt/sources.list.d/nginx.list
 RUN apt-get update \
-   && sudo apt-get install -y nginx
-   && cp /etc/nginx/sites-enabled default /etc/nginx/conf.d/default/conf
-   && systemctl enable nginx
+   && sudo apt-get install -y nginx \
+   && cp /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default/conf \
+   && systemctl enable nginx \
    && systemctl start nginx
 
 COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
