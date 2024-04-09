@@ -76,6 +76,9 @@ RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.de
     && dpkg -i kibana-8.13.1-amd64.deb \
     && rm kibana-8.13.1-amd64.deb
 COPY kibana.yaml /etc/kibana/kibana.yaml
+RUN groupadd -r kibana && useradd -r -g kibana kibana \
+    && chown kibana:kibana /etc/kibana/kibana.yaml \
+    && chmod 700 /etc/kibana/kibana.yaml
 EXPOSE 5601
 CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 
@@ -93,7 +96,9 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
     && mkdir -p /etc/fluent-package \
     && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
-RUN chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf
+RUN groupadd -r nginx && useradd -r -g fluent-package fluent-package \
+    && chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf \
+    && chmod 700 /etc/fluent-package/fluentd.conf 
 
 # Create directory for Elasticsearch data
 USER root
@@ -129,7 +134,7 @@ RUN chmod +x /etc/nginx/certs/generate_certs.sh \
 
 # Install Nginx and congifure Nginx.conf
 RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring \
-   && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
+   && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
    && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg \
    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
    http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
@@ -138,6 +143,14 @@ RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release
    && rm /etc/nginx/nginx.conf
 RUN systemctl --now enable nginx \
    && systemctl start nginx 
+   
+RUN groupadd -r nginx && useradd -r -g nginx nginx \
+    && chown nginx:nginx /etc/nginx/conf.d/jupyter.conf \
+    && chmod 660 /etc/nginx/conf.d/jupyter.conf \
+    && chown nginx:nginx /etc/nginx/conf.d/nginx.conf \
+    && chmod 660 /etc/nginx/conf.d/nginx.conf \
+    && chown nginx:nginx /etc/nginx/nginx.conf \
+    && chmod 660 /etc/nginx/nginx.conf
 
 COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
@@ -146,8 +159,7 @@ COPY ./nginx.conf /etc/nginx/nginx.conf
 RUN nginx -t && systemctl restart nginx
 
 # Create Nginx user and group; set permissions and ownership
-RUN groupadd -r nginx && useradd -r -g nginx nginx \
-   && chown nginx:nginx /etc/nginx/certs/*.pem \
+RUN chown nginx:nginx /etc/nginx/certs/*.pem \
    && chmod 600 /etc/nginx/certs/*.pem \
    && chown nginx:nginx /etc/nginx/certs/*.csr \
    && chmod 600 /etc/nginx/certs/*.csr \
