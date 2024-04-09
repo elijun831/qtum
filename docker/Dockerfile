@@ -51,6 +51,11 @@ RUN apt-get update && apt-get install -y \
    ntpdate \
    ntpstat \
    supervisor \
+   gnupg2 \
+   ca-certificates \
+   lsb-release \
+   ubuntu-keyring \
+   apt-transport-https \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
