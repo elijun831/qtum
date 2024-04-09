@@ -127,20 +127,16 @@ COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
   && /etc/nginx/certs/generate_certs.sh
 
-# Install Nginx, upgrade Nginx to 1.24, configure nginx.conf directory, and restart Nginx
-RUN apt-get update && apt-get install -y nginx libnss3-tools \
-    && rm /etc/nginx/sites-enabled/default \
-    && apt-get update && apt-get install -y gnupg2 ca-certificates lsb-release ubuntu-keyring apt-transport-https \
-    && apt update
-RUN curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
+# Install Nginx and congifure Nginx.conf
+RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring \
+   && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | sudo tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
    && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg \
-   && mkdir /etc/apt/sources.list.d/nginx.list
-COPY nginx.list /etc/apt/sources.list.d/nginx.list
-RUN apt-get update \
-   && sudo apt-get install -y nginx \
-   && cp /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default/conf \
-   && systemctl enable nginx \
-   && systemctl start nginx
+   && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+   http://nginx.org/packages/ubuntu $(lsb_release -cs) nginx" \
+   | tee /etc/apt/sources.list.d/nginx.list \
+   && apt-get update && apt-get install -y nginx
+RUN systemctl --now enable nginx \
+   && systemctl start nginx 
 
 COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
