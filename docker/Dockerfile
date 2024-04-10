@@ -78,12 +78,12 @@ RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.de
 COPY kibana.yaml /etc/kibana/kibana.yaml
 
 # Conditional group and user creation 
-RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \ 
+RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
     if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
     chown kibana:kibana /etc/kibana/kibana.yaml && \
-    chmod 700 /etc/kibana/kibana.yaml 
+    chmod 700 /etc/kibana/kibana.yaml
 EXPOSE 5601
-CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"] 
+CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 
 # Install, configure, and start NTP service 
 COPY ntp.conf /etc/ntp.conf
@@ -100,6 +100,20 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
   && mkdir -p /etc/fluent-package \
   && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
+
+# Install and configure Elasticsearch
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
+    && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+    && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+    && mkdir -p /usr/share/elasticsearch \
+    && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 \
+    && if ! grep -q '^elasticsearch:' /etc/group; then groupadd -r elasticsearch; fi \
+    && if ! id -u elasticsearch > /dev/null 2>&1; then useradd -r -g elasticsearch elasticsearch; fi \
+    && chown -R elasticsearch:elasticsearch /usr/share/elasticsearch \
+    && chmod 640 /usr/share/elasticsearch/config/elasticsearch.yaml
+ENV ES_HOME=/usr/share/elasticsearch
+CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"]
+EXPOSE 9200 9300
 
 # Create directory for Elasticsearch data
 USER root
@@ -127,7 +141,7 @@ RUN . /venv/bin/activate && jupyter notebook --generate-config -y \
 # Create a directory to store the certificates (OpenSSL certificate & dhparam)
 # Copy domains.ext for use in Nginx and certificate generation 
 RUN mkdir -p /etc/nginx/certs
-COPY domains.ext /etc/nginx/certs/domains.ext 
+COPY domains.ext /etc/nginx/certs/domains.ext
 WORKDIR /etc/nginx/certs
 COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
@@ -148,12 +162,12 @@ COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
 RUN if ! grep -q '^nginx:' /etc/group; then groupadd -r nginx; fi && \
-    if ! id -u nginx >/dev/null 2>&1; then useradd -r -g nginx nginx; fi && \ 
+    if ! id -u nginx >/dev/null 2>&1; then useradd -r -g nginx nginx; fi && \
     chmod 755 /etc/nginx && \
     chmod 755 /etc/nginx/* && \
     chown -R nginx:nginx /etc/nginx && \
     chmod 644 /etc/nginx/*.conf && \
-    chmod 644 /etc/nginx/conf.d/*.conf 
+    chmod 644 /etc/nginx/conf.d/*.conf
 
 CMD ["nginx", "-g", "daemon off;"]
 
@@ -167,7 +181,7 @@ RUN chown nginx:nginx /etc/nginx/certs/*.pem \
    && chmod 400 /etc/nginx/certs/*.crt
 
 # Expose Ports (Adjust as necessary) 
-EXPOSE 8888 5678 8080 443 80 9090 9200 24224 24225
+EXPOSE 8888 5678 8080 443 80 9090 24224 24225
 
 # Create non-root user for security
 RUN adduser -u 5678 --disabled-password --gecos "" appuser
