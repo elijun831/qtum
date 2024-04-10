@@ -71,16 +71,19 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Install, configure, and start Kibana
 RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
-    && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
-    && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
-    && dpkg -i kibana-8.13.1-amd64.deb \
-    && rm kibana-8.13.1-amd64.deb
+  && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
+  && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
+  && dpkg -i kibana-8.13.1-amd64.deb \
+  && rm kibana-8.13.1-amd64.deb
 COPY kibana.yaml /etc/kibana/kibana.yaml
-RUN groupadd -r kibana && useradd -r -g kibana kibana \
-    && chown kibana:kibana /etc/kibana/kibana.yaml \
-    && chmod 700 /etc/kibana/kibana.yaml
+
+# Conditional group and user creation 
+RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
+    useradd -r -g kibana kibana && \
+    chown kibana:kibana /etc/kibana/kibana.yaml && \
+    chmod 700 /etc/kibana/kibana.yaml 
 EXPOSE 5601
-CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
+CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"] 
 
 # Install, configure, and start NTP service 
 COPY ntp.conf /etc/ntp.conf
