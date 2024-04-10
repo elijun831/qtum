@@ -133,7 +133,7 @@ COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
   && /etc/nginx/certs/generate_certs.sh
 
-# Install Nginx and congifure Nginx.conf
+# Install Nginx and configure Nginx.conf
 RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring \
    && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
    && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg \
@@ -147,7 +147,7 @@ COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
-RUN groupadd -r nginx && useradd -r -g nginx nginx \
+RUN useradd -r -g nginx nginx \
     && chmod 755 /etc/nginx \
     && chmod 755 /etc/nginx/* \
     && chown -R nginx:nginx /etc/nginx \
