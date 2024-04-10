@@ -78,8 +78,8 @@ RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.de
 COPY kibana.yaml /etc/kibana/kibana.yaml
 
 # Conditional group and user creation 
-RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
-    useradd -r -g kibana kibana && \
+RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \ 
+    if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
     chown kibana:kibana /etc/kibana/kibana.yaml && \
     chmod 700 /etc/kibana/kibana.yaml 
 EXPOSE 5601
@@ -187,6 +187,6 @@ VOLUME /notebooks
 WORKDIR /app
 RUN chmod -R 755 /app
 
-# Configure Supervisord and start processes with it 
+# Configure ElasticSearch, Fluent, Kibana, and Nginx and start processes with it 
 COPY start.sh /start.sh
 ENTRYPOINT ["/bin/bash", "/start.sh"]
