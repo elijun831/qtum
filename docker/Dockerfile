@@ -147,12 +147,13 @@ COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
 COPY nginx.conf /etc/nginx/conf.d/nginx.conf
 COPY ./nginx.conf /etc/nginx/nginx.conf
 
-RUN useradd -r -g nginx nginx \
-    && chmod 755 /etc/nginx \
-    && chmod 755 /etc/nginx/* \
-    && chown -R nginx:nginx /etc/nginx \
-    && chmod 644 /etc/nginx/*.conf \
-    && chmod 644 /etc/nginx/conf.d/*.conf 
+RUN if ! grep -q '^nginx:' /etc/group; then groupadd -r nginx; fi && \
+    if ! id -u nginx >/dev/null 2>&1; then useradd -r -g nginx nginx; fi && \ 
+    chmod 755 /etc/nginx && \
+    chmod 755 /etc/nginx/* && \
+    chown -R nginx:nginx /etc/nginx && \
+    chmod 644 /etc/nginx/*.conf && \
+    chmod 644 /etc/nginx/conf.d/*.conf 
 
 CMD ["nginx", "-g", "daemon off;"]
 
@@ -160,8 +161,6 @@ CMD ["nginx", "-g", "daemon off;"]
 RUN chown nginx:nginx /etc/nginx/certs/*.pem \
    && chmod 700 /etc/nginx/certs \
    && chmod 400 /etc/nginx/certs/*.pem \
-   && chown nginx:nginx /etc/nginx/certs/*.csr \
-   && chmod 400 /etc/nginx/certs/*.csr \
    && chown nginx:nginx /etc/nginx/certs/*.key \
    && chmod 400 /etc/nginx/certs/*.key \
    && chown nginx:nginx /etc/nginx/certs/*.crt \
