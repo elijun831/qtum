@@ -142,9 +142,11 @@ RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release
    | tee /etc/apt/sources.list.d/nginx.list \
    && apt-get update && apt-get install -y nginx \
    && rm /etc/nginx/nginx.conf
-RUN systemctl --now enable nginx \
-   && systemctl start nginx 
-   
+
+COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
+COPY nginx.conf /etc/nginx/conf.d/nginx.conf
+COPY ./nginx.conf /etc/nginx/nginx.conf
+
 RUN groupadd -r nginx && useradd -r -g nginx nginx \
     && chmod 755 /etc/nginx \
     && chmod 755 /etc/nginx/* \
@@ -152,11 +154,7 @@ RUN groupadd -r nginx && useradd -r -g nginx nginx \
     && chmod 644 /etc/nginx/*.conf \
     && chmod 644 /etc/nginx/conf.d/*.conf 
 
-COPY nginx.conf /etc/nginx/conf.d/jupyter.conf
-COPY nginx.conf /etc/nginx/conf.d/nginx.conf
-COPY ./nginx.conf /etc/nginx/nginx.conf
-
-RUN nginx -t && systemctl restart nginx
+CMD ["nginx", "-g", "daemon off;"]
 
 # Create Nginx user and group; set permissions and ownership
 RUN chown nginx:nginx /etc/nginx/certs/*.pem \
