@@ -183,7 +183,7 @@ RUN chown nginx:nginx /etc/nginx/certs/*.pem \
    && chmod 400 /etc/nginx/certs/*.crt
 
 # Expose Ports (Adjust as necessary) 
-EXPOSE 8888 5678 8080 443 80 9090 24224 24225
+EXPOSE 8888 8889 5678 8080 443 8443 80 9090 24224 24225
 
 # Create non-root user for security
 RUN adduser -u 5678 --disabled-password --gecos "" appuser
