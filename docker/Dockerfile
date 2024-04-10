@@ -103,22 +103,24 @@ COPY fluentd.conf /etc/fluent-package/fluentd.conf
 
 # Install and configure Elasticsearch
 RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
-    && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-    && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-    && mkdir -p /usr/share/elasticsearch \
-    && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 \
-    && if ! grep -q '^elasticsearch:' /etc/group; then groupadd -r elasticsearch; fi \
-    && if ! id -u elasticsearch > /dev/null 2>&1; then useradd -r -g elasticsearch elasticsearch; fi \
-    && chown -R elasticsearch:elasticsearch /usr/share/elasticsearch \
-    && chmod 640 /usr/share/elasticsearch/config/elasticsearch.yaml
+  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && mkdir -p /usr/share/elasticsearch \
+  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 \
+  && if ! grep -q '^elasticsearch:' /etc/group; then groupadd -r elasticsearch; fi \
+  && if ! id -u elasticsearch > /dev/null 2>&1; then useradd -r -g elasticsearch elasticsearch; fi \
+  && chown -R elasticsearch:elasticsearch /usr/share/elasticsearch \
+  && chmod 755 /usr/share/elasticsearch/config  \ # Grant directory permissions
+  && chmod 640 /usr/share/elasticsearch/config/elasticsearch.yaml 
+
 ENV ES_HOME=/usr/share/elasticsearch
 CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"]
 EXPOSE 9200 9300
 
 # Create directory for Elasticsearch data
-USER root
+USER root  # Switch to root for data directory operations
 RUN mkdir -p /mnt/data/elasticsearch \
-    && chown 1000:1000 /mnt/data/elasticsearch
+  && chown 1000:1000 /mnt/data/elasticsearch 
 
 # Set up work directory for Python application, copy Pipfile and Pipfile.lock, amd create and activate the virtual environment
 WORKDIR /home/appuser/app
