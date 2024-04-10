@@ -91,17 +91,15 @@ EXPOSE 123/udp
 CMD ["ntpd", "-d"]
 
 # Install and configure Fluentd
+# Fluentd setup (with conditional user creation)
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-    && DEBIAN_FRONTEND=noninteractive apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-    && groupadd -r fluent-package \
-    && useradd -r -g fluent-package fluent-package \
-    && mkdir -p /etc/fluent-package \
-    && chown fluent-package:fluent-package /etc/fluent-package
+  && DEBIAN_FRONTEND=noninteractive apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+  && if ! grep -q '^fluent-package:' /etc/group; then groupadd -r fluent-package; fi \
+  && if ! id -u fluent-package > /dev/null 2>&1; then useradd -r -g fluent-package fluent-package; fi \
+  && mkdir -p /etc/fluent-package \
+  && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
-RUN groupadd -r nginx && useradd -r -g fluent-package fluent-package \
-    && chown fluent-package:fluent-package /etc/fluent-package/fluentd.conf \
-    && chmod 700 /etc/fluent-package/fluentd.conf 
 
 # Create directory for Elasticsearch data
 USER root
