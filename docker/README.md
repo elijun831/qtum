@@ -14,7 +14,12 @@ Follow these steps to get the environment up and running.
 
 1. Clone the repository:
 ```
-git clone https://github.com/elijun831/3.0.0-3
+git clone https://github.com/elijun831/3.0.0-4
+```
+or
+
+```
+git clone --branch 3.0.0-4 --single-branch https://github.com/elijun831/quantumworkspace.git
 ```
 
 2. Navigate to the directory containing the Dockerfile by typing the following in your terminal:

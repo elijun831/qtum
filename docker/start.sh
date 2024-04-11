@@ -3,15 +3,16 @@
 # ================ Start Services in Background ================
 echo "[INFO] Starting Elasticsearch..."
 # Start Elasticsearch in the background (adjust the command as needed)
-/etc/elasticsearch/elasticsearch.yaml &
+./elasticsearch.yaml &
 
 echo "[INFO] Starting Fluentd..."
 # Start Fluentd in the background (adjust the command as needed)
-/etc/td-agent/fluentd.conf -c /etc/td-agent/fluentd.conf &
+./fluentd.conf &
 
 echo "[INFO] Starting Kibana..."
 # Start Kibana in the background (adjust the command as needed)
-/etc/kibana/kibana.yaml &
+./kibana.yaml &
+
 # ================ Start Nginx ================
 echo "[INFO] Starting Nginx in foreground mode..."
 nginx -g "daemon off;"
