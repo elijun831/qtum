@@ -110,7 +110,7 @@ RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13
   && if ! grep -q '^elasticsearch:' /etc/group; then groupadd -r elasticsearch; fi \
   && if ! id -u elasticsearch > /dev/null 2>&1; then useradd -r -g elasticsearch elasticsearch; fi \
   && chown -R elasticsearch:elasticsearch /usr/share/elasticsearch \
-  && chmod 755 /usr/share/elasticsearch/config  \ # Grant directory permissions
+  && chmod 755 /usr/share/elasticsearch/config \
   && chmod 640 /usr/share/elasticsearch/config/elasticsearch.yaml 
 
 ENV ES_HOME=/usr/share/elasticsearch
