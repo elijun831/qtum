@@ -5,7 +5,7 @@ services:
       - /notebooks:/notebooks
     networks:
       - mynetwork
-    build: ./
+    build: .
     hostname: quantumworkspace
     logging:
       driver: "fluentd"
