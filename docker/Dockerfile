@@ -101,18 +101,23 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
   && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
 
-# Install and configure Elasticsearch, assuming a Debian-like system with a package installer script 
+# Install and configure Elasticsearch
 RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
- && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
- && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
- && mkdir -p /usr/share/elasticsearch \  # Create the directory
- && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1
+  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && mkdir -p /usr/share/elasticsearch \
+  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
 
-RUN /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto \
-  && chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
+# Generate Keystore (conditionally)
+RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
+    /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto; \
+  fi
+
+# Set ownership and environment and expose ports
+RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
 ENV ES_HOME=/usr/share/elasticsearch 
 CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
-EXPOSE 9200 9300
+EXPOSE 9200 9300 
 
 # Create directory for Elasticsearch data
 USER root  # Switch to root for data directory operations
