@@ -16,18 +16,16 @@ services:
   elasticsearch:
     image: elasticsearch:8.13.0
     volumes:
-      - ./elasticsearch.yaml:/usr/share/elasticsearch/config/elasticsearch.yaml
+      - ./elasticsearch.yaml:/usr/share/elasticsearch/config/elasticsearch.yaml:ro
       - es_data:/usr/share/elasticsearch/data
     environment:
       discovery.type: single-node
-    expose:
-      - "9200"
-      - "9300"
     ports:
       - "9200:9200" 
       - "9300:9300"
     networks:
       - mynetwork
+    container_name: qtum_elasticsearch
     #depends_on:
     #restart: no
 
