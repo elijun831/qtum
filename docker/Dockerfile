@@ -105,7 +105,8 @@ COPY fluentd.conf /etc/fluent-package/fluentd.conf
 RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
- && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
+ && mkdir -p /usr/share/elasticsearch \  # Create the directory
+ && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1
 
 RUN /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto \
   && chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
