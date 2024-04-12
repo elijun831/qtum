@@ -70,12 +70,28 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Install and enable Elasticsearch
-RUN apt-get install elasticsearch \
-   && systemctl start elasticsearch \
-   && systemctl enable elasticsearch
-EXPOSE 9200 9300
-RUN curl -X GET "localhost:9200"
+# Install and configure Elasticsearch
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
+  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && mkdir -p /usr/share/elasticsearch \
+  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
+
+# Generate Keystore (conditionally)
+RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
+    /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto; \
+  fi
+
+# Set ownership and environment and expose ports
+RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
+ENV ES_HOME=/usr/share/elasticsearch 
+CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
+EXPOSE 9200 9300 
+
+# Create directory for Elasticsearch data
+USER root  # Switch to root for data directory operations
+RUN mkdir -p /mnt/data/elasticsearch \
+  && chown 1000:1000 /mnt/data/elasticsearch 
 
 # Create directory for Elasticsearch data
 USER root  # Switch to root for data directory operations
