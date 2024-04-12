@@ -119,7 +119,7 @@ RUN if ! grep -q '^nginx:' /etc/group; then groupadd -r nginx; fi && \
     chmod 644 /etc/nginx/*.conf && \
     chmod 644 /etc/nginx/conf.d/*.conf
 
-CMD ["nginx", "-g", "daemon off;"]
+# CMD ["nginx", "-g", "daemon off;"]
 
 # Create Nginx user and group; set permissions and ownership
 RUN chown nginx:nginx /etc/nginx/certs/*.pem \
@@ -151,7 +151,9 @@ RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --d
   && apt-get update && apt-get install -y apt-transport-https \
   && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
   && apt-get update && apt-get install elasticsearch \
-  && systemctl start elasticsearch.service
+  && mkdir /var/run/elasticsearch \
+  && chown -R elasticsearch:elasticsearch /var/run/elasticsearch \
+  && chmod 775 /var/run/elasticsearch
 
 # Set ownership and environment and expose ports
 RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
