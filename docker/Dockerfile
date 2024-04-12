@@ -72,10 +72,10 @@ RUN cargo install wasm-pack
 
 # Install and configure Elasticsearch
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
-  && apt-get install apt-transport-https \
+  && apt-get update && apt-get install -y apt-transport-https \
   && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
   && apt-get update && apt-get install elasticsearch \
-  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
+  && systemctl start elasticsearch.service
 
 # Generate Keystore (conditionally)
 RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
