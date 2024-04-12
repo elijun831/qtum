@@ -50,7 +50,12 @@ RUN apt-get update && apt-get install -y \
    ruby-dev \
    ntpdate \
    ntpstat \
-   supervisor \
+   default-jre \
+   ecj \
+   openjdk-8-jre-headless \
+   openjdk-17-jre-headless \
+   openjdk-11-jre-headless \
+   openjdk-18-jre-headless \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -64,10 +69,17 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Install and configure Supervisord
-RUN apt-get update && apt-get install supervisor \
-    && mkdir -p /etc/supervisor/conf.d
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Install and configure Elasticsearch
+RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
+  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
+  && mkdir -p /usr/share/elasticsearch \
+  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
+
+# Generate Keystore (conditionally)
+RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
+    /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto; \
+  fi
 
 # Install, configure, and start Kibana
 RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
@@ -100,18 +112,6 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
   && mkdir -p /etc/fluent-package \
   && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
-
-# Install and configure Elasticsearch
-RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
-  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-  && mkdir -p /usr/share/elasticsearch \
-  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
-
-# Generate Keystore (conditionally)
-RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
-    /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto; \
-  fi
 
 # Set ownership and environment and expose ports
 RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
