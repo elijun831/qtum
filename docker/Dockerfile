@@ -70,65 +70,6 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Install and configure Elasticsearch
-RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
-  && apt-get update && apt-get install -y apt-transport-https \
-  && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
-  && apt-get update && apt-get install elasticsearch \
-  && systemctl start elasticsearch.service
-
-# Generate Keystore (conditionally)
-RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
-    /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto; \
-  fi
-
-# Set ownership and environment and expose ports
-RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
-ENV ES_HOME=/usr/share/elasticsearch 
-CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
-EXPOSE 9200 9300 
-
-# Create directory for Elasticsearch data
-USER root  # Switch to root for data directory operations
-RUN mkdir -p /mnt/data/elasticsearch \
-  && chown 1000:1000 /mnt/data/elasticsearch 
-
-# Create directory for Elasticsearch data
-USER root  # Switch to root for data directory operations
-RUN mkdir -p /mnt/data/elasticsearch \
-  && chown 1000:1000 /mnt/data/elasticsearch 
-
-# Install and start Kibana
-RUN apt-get install kibana \
-   && systemctl start kibana \
-   && systemctl enable kibana
-COPY kibana.yaml /etc/kibana/kibana.yaml
-EXPOSE 5601
-
-# Conditional group and user creation 
-RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
-    if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
-    chown kibana:kibana /etc/kibana/kibana.yaml && \
-    chmod 700 /etc/kibana/kibana.yaml
-EXPOSE 5601
-CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
-
-# Install, configure, and start NTP service 
-COPY ntp.conf /etc/ntp.conf
-EXPOSE 123/udp
-CMD ["ntpd", "-d"]
-
-# Install and configure Fluentd
-# Fluentd setup (with conditional user creation)
-RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-  && DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-  && if ! grep -q '^fluent-package:' /etc/group; then groupadd -r fluent-package; fi \
-  && if ! id -u fluent-package > /dev/null 2>&1; then useradd -r -g fluent-package fluent-package; fi \
-  && mkdir -p /etc/fluent-package \
-  && chown fluent-package:fluent-package /etc/fluent-package
-COPY fluentd.conf /etc/fluent-package/fluentd.conf
-
 # Set up work directory for Python application, copy Pipfile and Pipfile.lock, amd create and activate the virtual environment
 WORKDIR /home/appuser/app
 COPY Pipfile Pipfile.lock /home/appuser/app/
@@ -205,6 +146,60 @@ VOLUME /notebooks
 WORKDIR /app
 RUN chmod -R 755 /app
 
-# Configure ElasticSearch, Fluent, Kibana, and Nginx and start processes with it 
+# Install and configure Elasticsearch
+RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
+  && apt-get update && apt-get install -y apt-transport-https \
+  && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
+  && apt-get update && apt-get install elasticsearch \
+  && systemctl start elasticsearch.service
+
+# Set ownership and environment and expose ports
+RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
+ENV ES_HOME=/usr/share/elasticsearch 
+CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
+EXPOSE 9200 9300 
+
+# Create directory for Elasticsearch data
+USER root  # Switch to root for data directory operations
+RUN mkdir -p /mnt/data/elasticsearch \
+  && chown 1000:1000 /mnt/data/elasticsearch 
+
+# Create directory for Elasticsearch data
+USER root  # Switch to root for data directory operations
+RUN mkdir -p /mnt/data/elasticsearch \
+  && chown 1000:1000 /mnt/data/elasticsearch 
+
+# Install and start Kibana
+RUN apt-get install kibana \
+   && systemctl start kibana \
+   && systemctl enable kibana
+COPY kibana.yaml /etc/kibana/kibana.yaml
+EXPOSE 5601
+
+# Conditional group and user creation 
+RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
+    if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
+    chown kibana:kibana /etc/kibana/kibana.yaml && \
+    chmod 700 /etc/kibana/kibana.yaml
+EXPOSE 5601
+CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
+
+# Install, configure, and start NTP service 
+COPY ntp.conf /etc/ntp.conf
+EXPOSE 123/udp
+CMD ["ntpd", "-d"]
+
+# Install and configure Fluentd
+# Fluentd setup (with conditional user creation)
+RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
+  && DEBIAN_FRONTEND=noninteractive apt-get update \
+  && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+  && if ! grep -q '^fluent-package:' /etc/group; then groupadd -r fluent-package; fi \
+  && if ! id -u fluent-package > /dev/null 2>&1; then useradd -r -g fluent-package fluent-package; fi \
+  && mkdir -p /etc/fluent-package \
+  && chown fluent-package:fluent-package /etc/fluent-package
+COPY fluentd.conf /etc/fluent-package/fluentd.conf
+
+# Configure ElasticSearch, Fluent, Logstash, and Nginx and start processes with it 
 COPY start.sh /start.sh
 ENTRYPOINT ["/bin/bash", "/start.sh"]
