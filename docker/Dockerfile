@@ -56,6 +56,7 @@ RUN apt-get update && apt-get install -y \
    openjdk-17-jre-headless \
    openjdk-11-jre-headless \
    openjdk-18-jre-headless \
+   gnupg2 \
    && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
@@ -69,25 +70,24 @@ WORKDIR ${PROJECT_DIR}/rust
 # Install wasm-pack
 RUN cargo install wasm-pack
 
-# Install and configure Elasticsearch
-RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
-  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-  && mkdir -p /usr/share/elasticsearch \
-  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
+# Install and enable Elasticsearch
+RUN apt-get install elasticsearch \
+   && systemctl start elasticsearch \
+   && systemctl enable elasticsearch
+EXPOSE 9200 9300
+RUN curl -X GET "localhost:9200"
 
-# Generate Keystore (conditionally)
-RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
-    /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto; \
-  fi
+# Create directory for Elasticsearch data
+USER root  # Switch to root for data directory operations
+RUN mkdir -p /mnt/data/elasticsearch \
+  && chown 1000:1000 /mnt/data/elasticsearch 
 
-# Install, configure, and start Kibana
-RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
-  && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
-  && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
-  && dpkg -i kibana-8.13.1-amd64.deb \
-  && rm kibana-8.13.1-amd64.deb
+# Install and start Kibana
+RUN apt-get install kibana \
+   && systemctl start kibana \
+   && systemctl enable kibana
 COPY kibana.yaml /etc/kibana/kibana.yaml
+EXPOSE 5601
 
 # Conditional group and user creation 
 RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
@@ -112,17 +112,6 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
   && mkdir -p /etc/fluent-package \
   && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
-
-# Set ownership and environment and expose ports
-RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
-ENV ES_HOME=/usr/share/elasticsearch 
-CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
-EXPOSE 9200 9300 
-
-# Create directory for Elasticsearch data
-USER root  # Switch to root for data directory operations
-RUN mkdir -p /mnt/data/elasticsearch \
-  && chown 1000:1000 /mnt/data/elasticsearch 
 
 # Set up work directory for Python application, copy Pipfile and Pipfile.lock, amd create and activate the virtual environment
 WORKDIR /home/appuser/app
@@ -152,7 +141,7 @@ RUN chmod +x /etc/nginx/certs/generate_certs.sh \
   && /etc/nginx/certs/generate_certs.sh
 
 # Install Nginx and configure Nginx.conf
-RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring \
+RUN apt-get update && apt-get install -y ca-certificates lsb-release ubuntu-keyring \
    && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
    && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg \
    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
