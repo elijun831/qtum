@@ -79,11 +79,6 @@ indices.fielddata.cache.size: 75%
 # GC tune
 jvm.options: "-XX:+UseConcMarkSweepGC -XX:+CMSParallelRemarkEnabled"
 #
-# Index setup
-index.refresh_interval: -1
-index.number_of_replicas: 1
-index.number_of_shards: 5
-#
 # Snapshot setting
 snapshot.location: /var/lib/elasticsearch/snapshots
 gateway.recover_after_nodes: 3
