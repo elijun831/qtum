@@ -88,11 +88,6 @@ discovery.seed_hosts: ["127.0.0.1", "[::1]", "localhost", "*.quantumworkspace.de
 #action.destructive_requires_name: false
 
 #----------------------- BEGIN SECURITY AUTO CONFIGURATION -----------------------
-#
-# The following settings, TLS certificates, and keys have been automatically      
-# generated to configure Elasticsearch security features on 13-04-2024 06:02:27
-#
-# --------------------------------------------------------------------------------
 
 # Memory allocation
 heap.size: 2g
@@ -117,7 +112,6 @@ xpack.monitoring.collection.enabled: true
 
 # Enable security features
 xpack.security.enabled: true
-
 xpack.security.enrollment.enabled: true
 
 # Enable encryption for HTTP API client connections, such as Kibana, Logstash, and Agents
@@ -131,6 +125,10 @@ xpack.security.transport.ssl:
   verification_mode: certificate
   keystore.path: certs/transport.p12
   truststore.path: certs/transport.p12
+
+# IMPORTANT: Replace with your actual keystore password 
+xpack.security.transport.ssl.keystore.password: YOUR_PKCS12_PASSWORD
+
 # Create a new cluster with the current node only
 # Additional nodes can still join the cluster later
 cluster.initial_master_nodes: ["instances"]
