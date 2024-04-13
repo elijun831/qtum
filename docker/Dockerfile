@@ -3,6 +3,11 @@
 FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Install, configure, and start NTP service 
+COPY ntp.conf /etc/ntp.conf
+EXPOSE 123/udp
+CMD ["ntpd", "-d"]
+
 # Copy configuration files
 COPY hosts /etc/hosts
 COPY limits.conf /etc/security/limits.conf
@@ -59,6 +64,7 @@ RUN apt-get update && apt-get install -y \
    gnupg2 \
    && apt-get clean
 
+# ==========================================
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     $HOME/.cargo/bin/rustup update
@@ -84,6 +90,7 @@ RUN . /venv/bin/activate \
     && pipenv run pip install jupyter notebook jupyterlab voila
 COPY jupyter_notebook_config.py /home/appuser/.jupyter/jupyter_notebook_config.py
 
+# ==========================================
 # Generate and modify Jupyter Notebook config
 RUN . /venv/bin/activate && jupyter notebook --generate-config -y \
     && mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
@@ -96,7 +103,8 @@ WORKDIR /etc/nginx/certs
 COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
   && /etc/nginx/certs/generate_certs.sh
-
+  
+# ==========================================
 # Install Nginx and configure Nginx.conf
 RUN apt-get update && apt-get install -y ca-certificates lsb-release ubuntu-keyring \
    && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
@@ -146,6 +154,7 @@ VOLUME /notebooks
 WORKDIR /app
 RUN chmod -R 755 /app
 
+# ==========================================
 # Install and configure Elasticsearch
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
   && apt-get update && apt-get install -y apt-transport-https \
@@ -162,15 +171,11 @@ CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"]
 EXPOSE 9200 9300 
 
 # Create directory for Elasticsearch data
-USER root  # Switch to root for data directory operations
+USER root 
 RUN mkdir -p /mnt/data/elasticsearch \
   && chown 1000:1000 /mnt/data/elasticsearch 
 
-# Create directory for Elasticsearch data
-USER root  # Switch to root for data directory operations
-RUN mkdir -p /mnt/data/elasticsearch \
-  && chown 1000:1000 /mnt/data/elasticsearch 
-
+# ==========================================
 # Install and start Kibana
 RUN apt-get install kibana \
    && systemctl start kibana \
@@ -186,11 +191,7 @@ RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
 EXPOSE 5601
 CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 
-# Install, configure, and start NTP service 
-COPY ntp.conf /etc/ntp.conf
-EXPOSE 123/udp
-CMD ["ntpd", "-d"]
-
+# ==========================================
 # Install and configure Fluentd
 # Fluentd setup (with conditional user creation)
 RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
@@ -202,6 +203,7 @@ RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-
   && chown fluent-package:fluent-package /etc/fluent-package
 COPY fluentd.conf /etc/fluent-package/fluentd.conf
 
-# Configure ElasticSearch, Fluent, Logstash, and Nginx and start processes with it 
+# ==========================================
+# Configure ElasticSearch, Logstash, Kibana, and Nginx and start processes with it 
 COPY start.sh /start.sh
 ENTRYPOINT ["/bin/bash", "/start.sh"]
