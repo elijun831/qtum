@@ -64,6 +64,10 @@ RUN apt-get update && apt-get install -y \
    gnupg2 \
    && apt-get clean
 
+# Set up default OpenJDK version to Java 18
+ENV JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
+ENV PATH=$PATH:$JAVA_HOME/bin
+
 # ==========================================
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
