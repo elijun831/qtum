@@ -13,8 +13,8 @@ path.logs: /var/log/elasticsearch
 
 # ----------------------------------- Memory -----------------------------------
 # Optimize your heap size based on available system memory
-heap.size: 2g 
-bootstrap.memory_lock: true 
+# heap.size: 2g 
+# bootstrap.memory_lock: true 
 
 # ---------------------------------- Network -----------------------------------
 network.host: 0.0.0.0 
