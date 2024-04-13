@@ -161,12 +161,12 @@ RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --d
   && apt-get update && apt-get install -y apt-transport-https \
   && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
   && apt-get update && apt-get install elasticsearch \
+  && mkdir /etc/elasticsearch/ \
+  && chown -R elasticsearch:elasticsearch /etc/elasticsearch/ \
+  && chmod 775 /etc/elasticsearch/
   && /bin/systemctl daemon-reload \
   && /bin/systemctl enable elasticsearch.service \
-  && systemctl start elasticsearch.service \
-  && mkdir /var/run/elasticsearch \
-  && chown -R elasticsearch:elasticsearch /var/run/elasticsearch \
-  && chmod 775 /var/run/elasticsearch
+  && systemctl start elasticsearch.service
 
 # Set ownership and environment and expose ports
 RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
