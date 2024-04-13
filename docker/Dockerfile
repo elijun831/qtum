@@ -204,16 +204,6 @@ EXPOSE 5601
 CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 
 # ==========================================
-# Install and configure Fluentd
-# Fluentd setup (with conditional user creation)
-RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-  && DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-  && if ! grep -q '^fluent-package:' /etc/group; then groupadd -r fluent-package; fi \
-  && if ! id -u fluent-package > /dev/null 2>&1; then useradd -r -g fluent-package fluent-package; fi \
-  && mkdir -p /etc/fluent-package \
-  && chown fluent-package:fluent-package /etc/fluent-package
-COPY fluentd.conf /etc/fluent-package/fluentd.conf
 
 # ==========================================
 # Configure ElasticSearch, Logstash, Kibana, and Nginx and start processes with it 
