@@ -67,6 +67,7 @@ RUN apt-get update && apt-get install -y \
 # Set up default OpenJDK version to Java 18
 ENV JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
 ENV PATH=$PATH:$JAVA_HOME/bin
+RUN java -version
 
 # ==========================================
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
