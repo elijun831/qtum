@@ -44,6 +44,6 @@ xpack.security.transport.ssl:
 xpack.security.transport.ssl.keystore.password: YOUR_PKCS12_PASSWORD 
 
 # ----------------------------------- Other ------------------------------------
-xpack.monitoring.enabled: true
-xpack.monitoring.collection.enabled: true
+xpack.profiling.enabled: true
+xpack.profiling.collection.enabled: true
 
