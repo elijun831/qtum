@@ -138,6 +138,7 @@ RUN chown nginx:nginx /etc/nginx/certs/*.pem \
    && chown nginx:nginx /etc/nginx/certs/*.crt \
    && chmod 400 /etc/nginx/certs/*.crt
 
+# ==========================================
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888 8889 5678 8080 443 8443 80 9090 24224 24225
 
@@ -160,6 +161,9 @@ RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --d
   && apt-get update && apt-get install -y apt-transport-https \
   && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
   && apt-get update && apt-get install elasticsearch \
+  && /bin/systemctl daemon-reload \
+  && /bin/systemctl enable elasticsearch.service \
+  && systemctl start elasticsearch.service \
   && mkdir /var/run/elasticsearch \
   && chown -R elasticsearch:elasticsearch /var/run/elasticsearch \
   && chmod 775 /var/run/elasticsearch
