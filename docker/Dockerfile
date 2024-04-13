@@ -67,7 +67,10 @@ RUN apt-get update && apt-get install -y \
 # Set up default OpenJDK version to Java 18
 ENV JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
 ENV PATH=$PATH:$JAVA_HOME/bin
-RUN java -version
+RUN java -version \
+   && touch /etc/elasticsearch/jvm.options.d/set-java-home.options
+COPY set-java-home.options /etc/elasticsearch/jvm.options.d/set-java-home.options
+RUN chown -R elasticsearch:elasticsearch /etc/elasticsearch/jvm.options.d
 
 # ==========================================
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
