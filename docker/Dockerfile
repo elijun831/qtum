@@ -228,7 +228,7 @@ RUN apt-get update && apt-get install kibana \
    && /bin/systemctl daemon-reload \
    && /bin/systemctl enable kibana.service \
    && systemctl start kibana.service 
-COPY kibana.yaml /etc/kibana/kibana.yaml
+COPY kibana.yml /etc/kibana/kibana.yml
 RUN systemctl restart kibana.service 
 
 # Conditional group and user creation 
@@ -244,8 +244,9 @@ CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 # Install and start Kibana
 EXPOSE 5044
 RUN apt-get update && apt-get install logstash \
-   && systemctl start logstash.service 
-COPY logstash.yml /etc/kibana/kibana.yaml
+   && systemctl start logstash.service \
+   && touch /etc/logstash/conf.d/logstash.yml
+COPY logstash.yml /etc/logstash/conf.d/logstash.yml
 RUN systemctl restart kibana.service 
 
 # ==========================================
