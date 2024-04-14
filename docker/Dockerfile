@@ -196,25 +196,24 @@ RUN echo "keystore_password" > /var/log/elasticsearch/my_pwd_file.tmp \
 COPY elasticsearch.service /usr/lib/systemd/system/elasticsearch.service
 COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
 COPY elasticsearch /etc/default/elasticsearch
-RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
-  && chmod 775 /usr/share/elasticsearch \
-  && chown elasticsearch:elasticsearch -R /var/lib/elasticsearch \
+RUN chown elasticsearch:elasticsearch -R /var/lib/elasticsearch \
   && chmod 775 /var/lib/elasticsearch \
   && chown elasticsearch:elasticsearch -R /etc/default/elasticsearch \
   && chmod 775 /etc/default/elasticsearch \
   && chown elasticsearch:elasticsearch -R /etc/elasticsearch \
   && chmod 775 /etc/elasticsearch
 
+# Set ownership and environment and expose ports
+RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
+  && chmod 775 /usr/share/elasticsearch
+ENV ES_HOME=/usr/share/elasticsearch 
+CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
+EXPOSE 9200 9300 
+
 # Run Elasticsearch
 RUN /bin/systemctl daemon-reload \
   && /bin/systemctl enable elasticsearch.service \
   && /bin/systemctl start elasticsearch.service
-
-# Set ownership and environment and expose ports
-RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
-ENV ES_HOME=/usr/share/elasticsearch 
-CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
-EXPOSE 9200 9300 
 
 # Create directory for Elasticsearch data
 USER root 
