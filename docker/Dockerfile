@@ -170,6 +170,7 @@ RUN chmod -R 755 /app
 # ==========================================
 
 # Install and configure Elasticsearch
+EXPOSE 9200 9300
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
   && apt-get update && apt-get install -y apt-transport-https \
   && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
@@ -208,7 +209,6 @@ RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
   && chmod 775 /usr/share/elasticsearch
 ENV ES_HOME=/usr/share/elasticsearch 
 CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
-EXPOSE 9200 9300 
 
 # Run Elasticsearch
 RUN /bin/systemctl daemon-reload \
@@ -221,23 +221,32 @@ RUN mkdir -p /mnt/data/elasticsearch \
   && chown 1000:1000 /mnt/data/elasticsearch 
 
 # ==========================================
+
 # Install and start Kibana
+EXPOSE 5601
 RUN apt-get update && apt-get install kibana \
    && /bin/systemctl daemon-reload \
    && /bin/systemctl enable kibana.service \
    && systemctl start kibana.service 
 COPY kibana.yaml /etc/kibana/kibana.yaml
-EXPOSE 5601
+RUN systemctl restart kibana.service 
 
 # Conditional group and user creation 
 RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
     if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
     chown kibana:kibana /etc/kibana/kibana.yaml && \
     chmod 700 /etc/kibana/kibana.yaml
-EXPOSE 5601
 CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
 
 # ==========================================
+
+# Install and start Logstash
+# Install and start Kibana
+EXPOSE 5044
+RUN apt-get update && apt-get install logstash \
+   && systemctl start logstash.service 
+COPY logstash.yml /etc/kibana/kibana.yaml
+RUN systemctl restart kibana.service 
 
 # ==========================================
 # Configure ElasticSearch, Logstash, Kibana, and Nginx and start processes with it 
