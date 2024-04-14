@@ -8,10 +8,10 @@ input {
 
 filter {
   grok {
-    match => { "message" => "%{COMBINEDAPACHELOG}" }
+    match => { "message" => "%{IPORHOST:client_ip} - %{USER:remote_user} \[%{HTTPDATE:timestamp}\] \"%{WORD:method} %{URIPATHPARAM:request} HTTP/%{NUMBER:http_version}\" %{NUMBER:status} %{NUMBER:bytes_sent} \"%{GREEDYDATA:referrer}\" \"%{GREEDYDATA:user_agent}\"" }
   }
   date {
-    match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ] # Adjust if needed
+    match => [ "timestamp" , "dd/MMM/yyyy:HH:mm:ss Z" ] 
   }
 }
 
