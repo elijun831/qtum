@@ -64,6 +64,10 @@ RUN apt-get update && apt-get install -y \
    gnupg2 \
    && apt-get clean
 
+# Create the 'elasticsearch' user if it doesn't already exist and add it to the 'elasticsearch' group.
+RUN if ! grep -q '^elasticsearch:' /etc/group; then groupadd -r elasticsearch; fi && \
+  if ! id -u elasticsearch > /dev/null 2>&1; then useradd -r -g elasticsearch elasticsearch; fi
+
 # Set up default OpenJDK version to Java 18
 ENV JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
 ENV PATH=$PATH:$JAVA_HOME/bin
@@ -164,6 +168,7 @@ WORKDIR /app
 RUN chmod -R 755 /app
 
 # ==========================================
+
 # Install and configure Elasticsearch
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
   && apt-get update && apt-get install -y apt-transport-https \
