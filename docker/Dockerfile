@@ -234,9 +234,9 @@ RUN systemctl restart kibana.service
 # Conditional group and user creation 
 RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
     if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
-    chown kibana:kibana /etc/kibana/kibana.yaml && \
-    chmod 700 /etc/kibana/kibana.yaml
-CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
+    chown kibana:kibana /etc/kibana/kibana.yml && \
+    chmod 700 /etc/kibana/kibana.yml
+CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yml"]
 
 # ==========================================
 
