@@ -1,0 +1,26 @@
+# Directory: /etc/default/elasticsearch
+
+################################
+# Elasticsearch
+################################
+
+# Elasticsearch home directory
+#ES_HOME=/usr/share/elasticsearch
+
+# Elasticsearch Java path
+# ES_JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
+
+# Elasticsearch configuration directory
+# Note: this setting will be shared with command-line tools
+ES_PATH_CONF=/etc/elasticsearch
+
+# Elasticsearch PID directory
+#PID_DIR=/var/run/elasticsearch
+
+# Additional Java OPTS
+START_DAEMON=true
+ES_USER=elasticsearch
+ES_GROUP=elasticsearch
+
+# Configure restart on package upgrade (true, every other setting will lead to not restarting)
+#RESTART_ON_UPGRADE=true

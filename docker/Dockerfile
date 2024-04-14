@@ -3,6 +3,11 @@
 FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
+# Install, configure, and start NTP service 
+COPY ntp.conf /etc/ntp.conf
+EXPOSE 123/udp
+CMD ["ntpd", "-d"]
+
 # Copy configuration files
 COPY hosts /etc/hosts
 COPY limits.conf /etc/security/limits.conf
@@ -50,8 +55,28 @@ RUN apt-get update && apt-get install -y \
    ruby-dev \
    ntpdate \
    ntpstat \
-   supervisor \
+   default-jre \
+   ecj \
+   openjdk-8-jre-headless \
+   openjdk-17-jre-headless \
+   openjdk-11-jre-headless \
+   openjdk-18-jre-headless \
+   gnupg2 \
    && apt-get clean
+
+# Create the 'elasticsearch' user if it doesn't already exist and add it to the 'elasticsearch' group.
+RUN if ! grep -q '^elasticsearch:' /etc/group; then groupadd -r elasticsearch; fi && \
+  if ! id -u elasticsearch > /dev/null 2>&1; then useradd -r -g elasticsearch elasticsearch; fi
+
+# Set up default OpenJDK version to Java 18
+ENV JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
+ENV PATH=$PATH:$JAVA_HOME/bin
+RUN java -version \
+   && touch /etc/elasticsearch/jvm.options.d/set-java-home.options
+COPY set-java-home.options /etc/elasticsearch/jvm.options.d/set-java-home.options
+RUN chown -R elasticsearch:elasticsearch /etc/elasticsearch/jvm.options.d
+
+# ==========================================
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
@@ -63,66 +88,6 @@ WORKDIR ${PROJECT_DIR}/rust
 
 # Install wasm-pack
 RUN cargo install wasm-pack
-
-# Install and configure Supervisord
-RUN apt-get update && apt-get install supervisor \
-    && mkdir -p /etc/supervisor/conf.d
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
-# Install, configure, and start Kibana
-RUN wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb \
-  && wget -q https://artifacts.elastic.co/downloads/kibana/kibana-8.13.1-amd64.deb.sha512 \
-  && sha512sum -c kibana-8.13.1-amd64.deb.sha512 \
-  && dpkg -i kibana-8.13.1-amd64.deb \
-  && rm kibana-8.13.1-amd64.deb
-COPY kibana.yaml /etc/kibana/kibana.yaml
-
-# Conditional group and user creation 
-RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
-    if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
-    chown kibana:kibana /etc/kibana/kibana.yaml && \
-    chmod 700 /etc/kibana/kibana.yaml
-EXPOSE 5601
-CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yaml"]
-
-# Install, configure, and start NTP service 
-COPY ntp.conf /etc/ntp.conf
-EXPOSE 123/udp
-CMD ["ntpd", "-d"]
-
-# Install and configure Fluentd
-# Fluentd setup (with conditional user creation)
-RUN curl -fsSL https://toolbelt.treasuredata.com/sh/install-ubuntu-jammy-fluent-package5-lts.sh | sh \
-  && DEBIAN_FRONTEND=noninteractive apt-get update \
-  && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-  && if ! grep -q '^fluent-package:' /etc/group; then groupadd -r fluent-package; fi \
-  && if ! id -u fluent-package > /dev/null 2>&1; then useradd -r -g fluent-package fluent-package; fi \
-  && mkdir -p /etc/fluent-package \
-  && chown fluent-package:fluent-package /etc/fluent-package
-COPY fluentd.conf /etc/fluent-package/fluentd.conf
-
-# Install and configure Elasticsearch
-RUN wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz \
-  && wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-  && shasum -a 512 -c elasticsearch-8.13.2-linux-x86_64.tar.gz.sha512 \
-  && mkdir -p /usr/share/elasticsearch \
-  && tar -xzf elasticsearch-8.13.2-linux-x86_64.tar.gz -C /usr/share/elasticsearch --strip-components=1 
-
-# Generate Keystore (conditionally)
-RUN if [ ! -f /usr/share/elasticsearch/config/elasticsearch.keystore ]; then \
-    /usr/share/elasticsearch/bin/elasticsearch-setup-passwords auto; \
-  fi
-
-# Set ownership and environment and expose ports
-RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
-ENV ES_HOME=/usr/share/elasticsearch 
-CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
-EXPOSE 9200 9300 
-
-# Create directory for Elasticsearch data
-USER root  # Switch to root for data directory operations
-RUN mkdir -p /mnt/data/elasticsearch \
-  && chown 1000:1000 /mnt/data/elasticsearch 
 
 # Set up work directory for Python application, copy Pipfile and Pipfile.lock, amd create and activate the virtual environment
 WORKDIR /home/appuser/app
@@ -138,6 +103,8 @@ RUN . /venv/bin/activate \
     && pipenv run pip install jupyter notebook jupyterlab voila
 COPY jupyter_notebook_config.py /home/appuser/.jupyter/jupyter_notebook_config.py
 
+# ==========================================
+
 # Generate and modify Jupyter Notebook config
 RUN . /venv/bin/activate && jupyter notebook --generate-config -y \
     && mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
@@ -150,9 +117,11 @@ WORKDIR /etc/nginx/certs
 COPY generate_certs.sh /etc/nginx/certs/generate_certs.sh
 RUN chmod +x /etc/nginx/certs/generate_certs.sh \
   && /etc/nginx/certs/generate_certs.sh
+  
+# ==========================================
 
 # Install Nginx and configure Nginx.conf
-RUN apt-get update && apt-get install -y curl gnupg2 ca-certificates lsb-release ubuntu-keyring \
+RUN apt-get update && apt-get install -y ca-certificates lsb-release ubuntu-keyring \
    && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
    && gpg --dry-run --quiet --no-keyring --import --import-options import-show /usr/share/keyrings/nginx-archive-keyring.gpg \
    && echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
@@ -173,7 +142,7 @@ RUN if ! grep -q '^nginx:' /etc/group; then groupadd -r nginx; fi && \
     chmod 644 /etc/nginx/*.conf && \
     chmod 644 /etc/nginx/conf.d/*.conf
 
-CMD ["nginx", "-g", "daemon off;"]
+# CMD ["nginx", "-g", "daemon off;"]
 
 # Create Nginx user and group; set permissions and ownership
 RUN chown nginx:nginx /etc/nginx/certs/*.pem \
@@ -184,6 +153,7 @@ RUN chown nginx:nginx /etc/nginx/certs/*.pem \
    && chown nginx:nginx /etc/nginx/certs/*.crt \
    && chmod 400 /etc/nginx/certs/*.crt
 
+# ==========================================
 # Expose Ports (Adjust as necessary) 
 EXPOSE 8888 8889 5678 8080 443 8443 80 9090 24224 24225
 
@@ -200,6 +170,90 @@ VOLUME /notebooks
 WORKDIR /app
 RUN chmod -R 755 /app
 
-# Configure ElasticSearch, Fluent, Kibana, and Nginx and start processes with it 
+# ==========================================
+
+# Install and configure Elasticsearch
+EXPOSE 9200 9300
+RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
+  && apt-get update && apt-get install -y apt-transport-https \
+  && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
+  && apt-get update && apt-get install -y elasticsearch \
+  && GENERATED_PW=$(grep -oP '(?<=password for the elastic built-in superuser is : ).*' /var/log/elasticsearch/elasticsearch.log) \
+  && echo "ES_JAVA_OPTS=-Des.password=$GENERATED_PW" >> /etc/default/elasticsearch
+
+# Create keystore password file if needed
+RUN if [ -f /var/log/elasticsearch/my_pwd_file.tmp ]; then \
+        echo "keystore_password" > /var/log/elasticsearch/my_pwd_file.tmp; \
+        chmod 600 /var/log/elasticsearch/my_pwd_file.tmp; \
+    fi
+
+# Systemd Environment File and Start Elasticsearch
+RUN echo "ES_JAVA_OPTS=-Des.password=$GENERATED_PW" > /etc/systemd/system/elasticsearch.service.d/env_file.conf \
+    && echo "ES_KEYSTORE_PASSPHRASE_FILE=/var/log/elasticsearch/my_pwd_file.tmp" >> /etc/systemd/system/elasticsearch.service.d/env_file.conf \ 
+RUN echo "keystore_password" > /var/log/elasticsearch/my_pwd_file.tmp \
+  && chmod 600 /var/log/elasticsearch/my_pwd_file.tmp \
+  && systemctl set-environment ES_KEYSTORE_PASSPHRASE_FILE=/var/log/elasticsearch/my_pwd_file.tmp \
+  && chown elasticsearch:elasticsearch -R /var/log/elasticsearch \
+  && chmod 775 /var/log/elasticsearch
+
+# Copy Elasticsearch-related files to directories and change ownderships to the Elasticsearch group
+COPY elasticsearch.service /usr/lib/systemd/system/elasticsearch.service
+COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
+COPY elasticsearch /etc/default/elasticsearch
+RUN chown elasticsearch:elasticsearch -R /var/lib/elasticsearch \
+  && chmod 775 /var/lib/elasticsearch \
+  && chown elasticsearch:elasticsearch -R /etc/default/elasticsearch \
+  && chmod 775 /etc/default/elasticsearch \
+  && chown elasticsearch:elasticsearch -R /etc/elasticsearch \
+  && chmod 775 /etc/elasticsearch
+
+# Set ownership and environment and expose ports
+RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
+  && chmod 775 /usr/share/elasticsearch
+ENV ES_HOME=/usr/share/elasticsearch 
+CMD ["/usr/share/elasticsearch/bin/elasticsearch", "-Des.path.home=$ES_HOME"] 
+
+# Run Elasticsearch
+RUN /bin/systemctl daemon-reload \
+  && /bin/systemctl enable elasticsearch.service \
+  && /bin/systemctl start elasticsearch.service
+
+# Create directory for Elasticsearch data
+USER root 
+RUN mkdir -p /mnt/data/elasticsearch \
+  && chown 1000:1000 /mnt/data/elasticsearch 
+
+# ==========================================
+
+# Install and start Kibana
+EXPOSE 5601
+RUN apt-get update && apt-get install kibana \
+   && /bin/systemctl daemon-reload \
+   && /bin/systemctl enable kibana.service \
+   && systemctl start kibana.service 
+COPY kibana.yml /etc/kibana/kibana.yml
+RUN systemctl restart kibana.service 
+
+# Conditional group and user creation 
+RUN if ! grep -q '^kibana:' /etc/group; then groupadd -r kibana; fi && \
+    if ! id -u kibana > /dev/null 2>&1; then useradd -r -g kibana kibana; fi && \
+    chown kibana:kibana /etc/kibana/kibana.yml && \
+    chmod 700 /etc/kibana/kibana.yml
+CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yml"]
+
+# ==========================================
+
+# Install and start Logstash
+# Install and start Kibana
+EXPOSE 5044
+RUN apt-get update && apt-get install logstash \
+   && systemctl start logstash.service \
+   && touch /etc/logstash/conf.d/logstash.cpnf
+COPY logstash.conf /etc/logstash/conf.d/logstash.conf
+RUN systemctl restart kibana.service 
+
+# ==========================================
+
+# Configure ElasticSearch, Logstash, Kibana, and Nginx and start processes with it 
 COPY start.sh /start.sh
 ENTRYPOINT ["/bin/bash", "/start.sh"]

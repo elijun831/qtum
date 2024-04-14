@@ -1,0 +1,2 @@
+-Djava.home=/usr/lib/jvm/java-18-openjdk-amd64
+-Djava.io.tmpdir=/var/lib/elasticsearch
