@@ -179,6 +179,7 @@ RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --d
 
 COPY elasticsearch.service /usr/lib/systemd/system/elasticsearch.service
 COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
+COPY elasticsearch /etc/default/elasticsearch
 RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
   && chmod 775 /usr/share/elasticsearch \
   && chown elasticsearch:elasticsearch -R /var/log/elasticsearch \
@@ -189,7 +190,6 @@ RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
   && chmod 775 /etc/default/elasticsearch \
   && chown elasticsearch:elasticsearch -R /etc/elasticsearch \
   && chmod 775 /etc/elasticsearch \
-  && cp elasticsearch /etc/default/elasticsearch \
   && /bin/systemctl daemon-reload \
   && /bin/systemctl enable elasticsearch.service \
   && systemctl start elasticsearch.service
