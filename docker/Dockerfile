@@ -173,13 +173,24 @@ RUN chmod -R 755 /app
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
   && apt-get update && apt-get install -y apt-transport-https \
   && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
-  && apt-get update && apt-get install -y elasticsearch
-  
-# export generated password and echo $elastic_password
+  && apt-get update && apt-get install -y elasticsearch \
+  && GENERATED_PW=$(grep -oP '(?<=password for the elastic built-in superuser is : ).*' /var/log/elasticsearch/elasticsearch.log) \
+  && echo "ES_JAVA_OPTS=-Des.password=$GENERATED_PW" >> /etc/default/elasticsearch
+
+# Create keystore password file if needed
+RUN if [ -f /var/log/elasticsearch/my_pwd_file.tmp ]; then \
+        echo "keystore_password" > /var/log/elasticsearch/my_pwd_file.tmp; \
+        chmod 600 /var/log/elasticsearch/my_pwd_file.tmp; \
+    fi
+
+# Systemd Environment File and Start Elasticsearch
+RUN echo "ES_JAVA_OPTS=-Des.password=$GENERATED_PW" > /etc/systemd/system/elasticsearch.service.d/env_file.conf \
+    && echo "ES_KEYSTORE_PASSPHRASE_FILE=/var/log/elasticsearch/my_pwd_file.tmp" >> /etc/systemd/system/elasticsearch.service.d/env_file.conf \ 
 RUN echo "keystore_password" > /var/log/elasticsearch/my_pwd_file.tmp \
   && chmod 600 /var/log/elasticsearch/my_pwd_file.tmp \
   && systemctl set-environment ES_KEYSTORE_PASSPHRASE_FILE=/var/log/elasticsearch/my_pwd_file.tmp \
-  && systemctl start elasticsearch.service
+  && chown elasticsearch:elasticsearch -R /var/log/elasticsearch \
+  && chmod 775 /var/log/elasticsearch
 
 # Copy Elasticsearch-related files to directories and change ownderships to the Elasticsearch group
 COPY elasticsearch.service /usr/lib/systemd/system/elasticsearch.service
@@ -187,8 +198,6 @@ COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
 COPY elasticsearch /etc/default/elasticsearch
 RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
   && chmod 775 /usr/share/elasticsearch \
-  && chown elasticsearch:elasticsearch -R /var/log/elasticsearch \
-  && chmod 775 /var/log/elasticsearch \
   && chown elasticsearch:elasticsearch -R /var/lib/elasticsearch \
   && chmod 775 /var/lib/elasticsearch \
   && chown elasticsearch:elasticsearch -R /etc/default/elasticsearch \
