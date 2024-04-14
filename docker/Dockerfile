@@ -176,7 +176,12 @@ RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --d
   && apt-get update && apt-get install -y elasticsearch
   
 # export generated password and echo $elastic_password
+RUN echo "keystore_password" > /var/log/elasticsearch/my_pwd_file.tmp \
+  && chmod 600 /var/log/elasticsearch/my_pwd_file.tmp \
+  && systemctl set-environment ES_KEYSTORE_PASSPHRASE_FILE=/var/log/elasticsearch/my_pwd_file.tmp \
+  && systemctl start elasticsearch.service
 
+# Copy Elasticsearch-related files to directories and change ownderships to the Elasticsearch group
 COPY elasticsearch.service /usr/lib/systemd/system/elasticsearch.service
 COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
 COPY elasticsearch /etc/default/elasticsearch
@@ -189,8 +194,10 @@ RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
   && chown elasticsearch:elasticsearch -R /etc/default/elasticsearch \
   && chmod 775 /etc/default/elasticsearch \
   && chown elasticsearch:elasticsearch -R /etc/elasticsearch \
-  && chmod 775 /etc/elasticsearch \
-  && /bin/systemctl daemon-reload \
+  && chmod 775 /etc/elasticsearch
+
+# Run Elasticsearch
+RUN /bin/systemctl daemon-reload \
   && /bin/systemctl enable elasticsearch.service \
   && systemctl start elasticsearch.service
 
