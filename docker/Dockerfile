@@ -248,8 +248,8 @@ CMD ["/usr/share/kibana/bin/kibana", "-c", "/etc/kibana/kibana.yml"]
 EXPOSE 5044
 RUN apt-get update && apt-get install logstash \
    && systemctl start logstash.service \
-   && touch /etc/logstash/conf.d/logstash.yml
-COPY logstash.yml /etc/logstash/conf.d/logstash.yml
+   && touch /etc/logstash/conf.d/logstash.cpnf
+COPY logstash.conf /etc/logstash/conf.d/logstash.conf
 RUN systemctl restart kibana.service 
 
 # ==========================================
