@@ -1,3 +1,5 @@
+# Directory: /etc/default/elasticsearch
+
 ################################
 # Elasticsearch
 ################################
@@ -6,7 +8,7 @@
 #ES_HOME=/usr/share/elasticsearch
 
 # Elasticsearch Java path
-ES_JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
+# ES_JAVA_HOME=/usr/lib/jvm/java-18-openjdk-amd64
 
 # Elasticsearch configuration directory
 # Note: this setting will be shared with command-line tools
