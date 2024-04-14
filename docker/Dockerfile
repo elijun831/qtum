@@ -168,8 +168,12 @@ RUN chmod -R 755 /app
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --dearmor -o /usr/share/keyrings/elasticsearch-keyring.gpg \
   && apt-get update && apt-get install -y apt-transport-https \
   && echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/8.x/apt stable main" | sudo tee /etc/apt/sources.list.d/elastic-8.x.list \
-  && apt-get update && apt-get install -y elasticsearch \
-  && chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
+  && apt-get update && apt-get install -y elasticsearch
+  
+# export generated password and echo $elastic_password
+
+COPY elasticsearch.service /usr/lib/systemd/system/elasticsearch.service
+RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
   && chmod 775 /usr/share/elasticsearch \
   && chown elasticsearch:elasticsearch -R /var/log/elasticsearch \
   && chmod 775 /var/log/elasticsearch \
