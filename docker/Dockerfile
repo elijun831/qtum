@@ -77,6 +77,7 @@ COPY set-java-home.options /etc/elasticsearch/jvm.options.d/set-java-home.option
 RUN chown -R elasticsearch:elasticsearch /etc/elasticsearch/jvm.options.d
 
 # ==========================================
+
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y && \
     $HOME/.cargo/bin/rustup update
@@ -103,6 +104,7 @@ RUN . /venv/bin/activate \
 COPY jupyter_notebook_config.py /home/appuser/.jupyter/jupyter_notebook_config.py
 
 # ==========================================
+
 # Generate and modify Jupyter Notebook config
 RUN . /venv/bin/activate && jupyter notebook --generate-config -y \
     && mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
@@ -117,6 +119,7 @@ RUN chmod +x /etc/nginx/certs/generate_certs.sh \
   && /etc/nginx/certs/generate_certs.sh
   
 # ==========================================
+
 # Install Nginx and configure Nginx.conf
 RUN apt-get update && apt-get install -y ca-certificates lsb-release ubuntu-keyring \
    && curl -s https://nginx.org/keys/nginx_signing.key | gpg --dearmor | tee /usr/share/keyrings/nginx-archive-keyring.gpg >/dev/null \
@@ -250,6 +253,7 @@ COPY logstash.yml /etc/logstash/conf.d/logstash.yml
 RUN systemctl restart kibana.service 
 
 # ==========================================
+
 # Configure ElasticSearch, Logstash, Kibana, and Nginx and start processes with it 
 COPY start.sh /start.sh
 ENTRYPOINT ["/bin/bash", "/start.sh"]
