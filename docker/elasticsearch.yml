@@ -1,34 +1,24 @@
-# ======================== Elasticsearch Configuration =========================
+cluster.name: "my-cluster"
 
-# ---------------------------------- Cluster -----------------------------------
-cluster.name: "my-cluster" 
-
-# ------------------------------------ Node ------------------------------------
-node.name: "my-node" 
+node.name: "my-node"
 node.roles: [data, master, ingest]
 
-# ----------------------------------- Paths ------------------------------------
 path.data: /var/lib/elasticsearch
 path.logs: /var/log/elasticsearch
 
-# ----------------------------------- Memory -----------------------------------
-# Optimize your heap size based on available system memory
-# heap.size: 2g 
-# bootstrap.memory_lock: true 
+bootstrap.memory_lock: true
 
-# ---------------------------------- Network -----------------------------------
-network.host: 0.0.0.0 
+network.host: 127.0.0.1
 http.port: 9200
-http.cors.enabled: true 
-http.cors.allow-origin: "*" 
+http.cors.enabled: true
+http.cors.allow-origin: "*"
 
-# --------------------------------- Discovery ----------------------------------
-# Adjust based on your network's hostnames
+#discovery.seed_hosts: ["node1", "node2", "node3"]
 discovery.seed_hosts: ["127.0.0.1", "[::1]", "localhost", "*.quantumworkspace.dev"]
 
-# ---------------------------------- Security ----------------------------------
 xpack.security.enabled: true
-xpack.security.enrollment.enabled: true 
+
+xpack.security.enrollment.enabled: true
 
 xpack.security.http.ssl:
   enabled: true
@@ -40,10 +30,15 @@ xpack.security.transport.ssl:
   keystore.path: certs/transport.p12
   truststore.path: certs/transport.p12
 
-# IMPORTANT: Replace with your actual keystore password 
-xpack.security.transport.ssl.keystore.password: YOUR_PKCS12_PASSWORD 
+cluster.initial_master_nodes: ["node1"]
+#cluster.initial_master_nodes: ["node1", "node2", "node3"]
 
-# ----------------------------------- Other ------------------------------------
+http.host: 0.0.0.0
+
+# IMPORTANT: Replace with your actual keystore password 
+# xpack.security.transport.ssl.keystore.password: YOUR_PKCS12_PASSWORD 
+
+# Others
 xpack.profiling.enabled: true
 xpack.profiling.templates.enabled: true
 
