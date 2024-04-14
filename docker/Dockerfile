@@ -208,7 +208,7 @@ RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
 # Run Elasticsearch
 RUN /bin/systemctl daemon-reload \
   && /bin/systemctl enable elasticsearch.service \
-  && systemctl start elasticsearch.service
+  && /bin/systemctl start elasticsearch.service
 
 # Set ownership and environment and expose ports
 RUN chown -R elasticsearch:elasticsearch /usr/share/elasticsearch
