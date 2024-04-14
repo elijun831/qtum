@@ -178,6 +178,7 @@ RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | sudo gpg --d
 # export generated password and echo $elastic_password
 
 COPY elasticsearch.service /usr/lib/systemd/system/elasticsearch.service
+COPY elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
 RUN chown elasticsearch:elasticsearch -R /usr/share/elasticsearch \
   && chmod 775 /usr/share/elasticsearch \
   && chown elasticsearch:elasticsearch -R /var/log/elasticsearch \
