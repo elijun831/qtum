@@ -222,9 +222,10 @@ RUN mkdir -p /mnt/data/elasticsearch \
 
 # ==========================================
 # Install and start Kibana
-RUN apt-get install kibana \
-   && systemctl start kibana \
-   && systemctl enable kibana
+RUN apt-get update && apt-get install kibana \
+   && /bin/systemctl daemon-reload \
+   && /bin/systemctl enable kibana.service \
+   && systemctl start kibana.service 
 COPY kibana.yaml /etc/kibana/kibana.yaml
 EXPOSE 5601
 
