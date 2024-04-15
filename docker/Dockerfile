@@ -83,11 +83,9 @@ RUN . /venv/bin/activate && pipenv run pip install jupyter notebook jupyterlab v
 # Copy pre-configured Jupyter Notebook config
 COPY jupyter_notebook_config.py /home/appuser/.jupyter/jupyter_notebook_config.py
 
-# Generate Jupyter Notebook config
-RUN . /venv/bin/activate && jupyter notebook --generate-config -y
-
-# Modify Jupyter Notebook config
-RUN mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
+# Generate and Jupyter Notebook config
+RUN . /venv/bin/activate && jupyter notebook --generate-config -y \
+    && mkdir -p /home/appuser/.jupyter && echo "c.NotebookApp.token = ''" >> /home/appuser/.jupyter/jupyter_notebook_config.py
 
 # Create a directory to store the certificates
 RUN mkdir -p /etc/nginx/certs
