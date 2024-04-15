@@ -33,6 +33,7 @@ RUN apt-get update && apt-get install -y \
     bleachbit \
     nodejs \
     g++ \
+    gcc \
     git \
     libblas-dev \
     libffi-dev \
