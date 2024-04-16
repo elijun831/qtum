@@ -15,9 +15,6 @@
 HOME                    = .
 
 # For the FIPS settings
-config_diagnostics = 1
-openssl_conf = openssl_init
-
 .include /usr/local/ssl/fipsmodule.cnf
 
 [openssl_init]
