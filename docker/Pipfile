@@ -54,6 +54,8 @@ jaeger-client = "*"
 elasticsearch = "*"
 kafka-python = "*"
 beautifulsoup4 = "*"
+deepchem = "*"
+chemprop = "*"
 
 [requires]
 python_version = "3.11"
