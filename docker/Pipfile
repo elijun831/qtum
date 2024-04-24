@@ -56,6 +56,12 @@ kafka-python = "*"
 beautifulsoup4 = "*"
 deepchem = "*"
 chemprop = "*"
+rdkit = "*"
+pybel = "*"
+ase = "*"
+pyscf = "*"
+mdtraj = "*"
+chempy = "*"
 
 [requires]
 python_version = "3.11"
