@@ -57,10 +57,7 @@ beautifulsoup4 = "*"
 deepchem = "*"
 chemprop = "*"
 rdkit = "*"
-pybel = "*"
-ase = "*"
 pyscf = "*"
-mdtraj = "*"
 chempy = "*"
 
 [requires]
