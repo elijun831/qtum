@@ -21,7 +21,6 @@ RUN apt-get update && apt-get install -y \
     python3-setuptools \
     python3-wheel \
     python3-distutils \
-    pipenv \
     binutils \
     build-essential \
     curl \
