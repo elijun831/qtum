@@ -1,4 +1,4 @@
-# Version 3.0.1
+# Version 3.0.2
 # Base image
 FROM ubuntu:latest
 ARG DEBIAN_FRONTEND=noninteractive
