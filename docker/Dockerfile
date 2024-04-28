@@ -14,16 +14,16 @@ ENV PYTHONFAULTHANDLER 1
 
 # Install necessary packages
 RUN apt-get update && apt-get install -y \
-    python3.11-distlib \
-    python3.11-filelock \
-    python3.11-platformdirs \
-    python3.11-virtualenv \
+    python3-distlib \
+    python3-filelock \
+    python3-platformdirs \
+    python3-virtualenv \
     python3.11-venv \
-    python3.11-apt \
+    python3-apt \
     python3.11-dev \
-    python3.11-pip \
-    python3.11-setuptools \
-    python3.11-wheel \
+    python3-pip \
+    python3-setuptools \
+    python3-wheel \
     binutils \
     build-essential \
     curl \
