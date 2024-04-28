@@ -1,6 +1,6 @@
-# Version 3.0.0
+# Version 3.0.1
 # Base image
-FROM ubuntu:latest
+FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
 
 # Copy custom hosts file to /etc/hosts
@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     python3.11-venv \
     python3-apt \
     python3-pip \
+    python3-dev \
     python3-setuptools \
     python3-wheel \
     python3-distutils \
@@ -48,6 +49,8 @@ RUN apt-get update && apt-get install -y \
     tree \
     nginx \
     libnss3-tools \
+    openjdk-17-jdk-headless \
+    default-jre \
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
