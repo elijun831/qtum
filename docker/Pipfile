@@ -50,6 +50,8 @@ strawberryfields = "*"
 sympy = "*"
 voila = "*"
 requests = "*"
+deepchem = "*"
+pyscf = "*"
 
 [requires]
 python_version = "3.11"
