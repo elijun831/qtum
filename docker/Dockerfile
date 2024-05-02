@@ -53,6 +53,7 @@ RUN apt-get update && apt-get install -y \
     libnss3-tools \
     openjdk-17-jdk-headless \
     default-jre \
+    snapd
     && apt-get clean
 
 # Install Rust, update it, create a directory, and set the working directory to the new Rust application directory
