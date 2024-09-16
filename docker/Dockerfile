@@ -1,4 +1,4 @@
-# Version 2.0.0
+# Version 2.0.1
 # Base image
 FROM debian:latest
 
@@ -63,8 +63,9 @@ SHELL ["/bin/bash", "-c"]
 # Add the pipenv virtual environment to the PATH
 ENV PATH=$PATH:/root/.local/share/virtualenvs/app-*/bin
 
-# Expose port for Jupyter Notebook
+# Expose port for Jupyter Notebook and debugging
 EXPOSE 8888
+EXPOSE 5678
 
 # Set up work directory
 WORKDIR /app

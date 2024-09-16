@@ -2,25 +2,26 @@
 apiVersion: apps/v1
 kind: ReplicaSet
 metadata:
-  name: quantumpackage
+  name: quantumworkspace
   labels:
-    app: quantumpackage
+    app: quantumworkspace
 spec:
   replicas: 3 # Could be any number
   selector:
     matchLabels:
-      app: quantumpackage
+      app: quantumworkspace
   template:
     metadata:
       labels:
-        app: quantumpackage
+        app: quantumworkspace
     spec:
       containers:
-      - name: quantumpackage
-        image: elijun831/quantumpackage:1.0.0
-        command: ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+      - name: quantumworkspace
+        image: elijun831/quantumworkspace:2.0.1
+        command: ["pipenv", "run", "jupyter", "lab", "--notebook-dir=/notebooks", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
         ports:
         - containerPort: 8888
+        - containerPort: 5678
         resources:
           requests:
             cpu: 100m

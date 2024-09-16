@@ -1,15 +1,12 @@
-version: '3.8'
+version: '2.0.1'
 services:
-  app:
+  webapp:
     build:
       context: .
       dockerfile: Dockerfile
-    volumes:
-      - ./app:/app
-      - ./notebooks:/notebooks
     ports:
-      - 8888:8888
-      - 5678:5678
-    user: appuser
-    environment:
-      - PYTHONDEBUG=1
+      - "8888:8888"
+      - "5678:5678"  # Expose port 5678 for debugging
+    volumes:
+      - ./notebooks:/notebooks
+    user: "appuser"

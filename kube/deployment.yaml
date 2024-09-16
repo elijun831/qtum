@@ -1,28 +1,44 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: quantumpackage-deployment
+  name: quantumworkspace-deployment
   labels:
-    app: quantumpackage
+    app: quantumworkspace
 spec:
-  replicas: 3
+  replicas: 3 # number of replicas to be generated
   selector:
     matchLabels:
-      app: quantumpackage
+      app: quantumworkspace
   template:
     metadata:
       labels:
-        app: quantumpackage
+        app: quantumworkspace
     spec:
       containers:
-      - name: quantumpackage
-        image: elijun831/quantumpackage:1.0.0
+      - name: quantumworkspace
+        image: elijun831/quantumworkspace:2.0.1
         ports:
         - containerPort: 8888
-        resources:
+        - containerProt: 5678
+        resources: # Set up the CPU and memory limit and request ranges
           limits:
             cpu: "1"
             memory: "1Gi"
           requests:
             cpu: "0.5"
             memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quantumworkspace-service
+spec:
+  selector:
+    app: quantumworkspace
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888
+    - protocol: TCP
+      port: 5678
+      targetPort: 5678

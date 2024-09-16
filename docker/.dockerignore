@@ -1,5 +1,6 @@
+# Version 2.0.1
 # Ignore everything
-**
+*
 
 # Except Dockerfile and necessary files
 !Dockerfile
@@ -32,5 +33,5 @@ venv
 # Ignore application directory
 /app
 
-# Ignore notebooks directory
-/notebooks
+# Include notebooks directory
+!notebooks/
