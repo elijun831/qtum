@@ -1,4 +1,4 @@
-# Version 2.0.3
+# Version 2.0.4
 
 # Ignore Python cache files 
 **/__pycache__
@@ -28,4 +28,4 @@ venv/
 !app/
 
 # Include the notebooks directory - Your core workspace!
-!notebooks/
+!notebooks/        

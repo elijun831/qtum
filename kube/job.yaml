@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: quantumworkspace
+  name: quantumworkspace-job
 spec:
   template:
     metadata:
-      name: quantumworkspace
+      name: quantumworkspace-job
     spec:
       containers:
       - name: quantumworkspace
-        image: elijun831/quantumworkspace:2.0.1
-        command: ["pipenv", "run", "jupyter", "lab", "--notebook-dir=/notebooks", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root"]
+        image: elijun831/quantumworkspace:2.0.4
+        command: ["/bin/bash", "/start.sh"]
       restartPolicy: Never

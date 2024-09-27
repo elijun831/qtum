@@ -1,44 +1,59 @@
-apiVersion: apps/v1
-kind: Deployment
+# This deployment setting assumes that a readWriteMany NFS volume was created in Google Cloud Platform (GCP) beforehand.
+# Visit the following link if you need instructions on creating a NFS volume: https://cloud.google.com/architecture/partners/netapp-cloud-volumes/creating-nfs-volumes
+# Execute the following command by typing "kubectl apply -f deployment.yaml" in your terminal or Linux virtual machine.
+
 metadata:
   name: quantumworkspace-deployment
   labels:
-    app: quantumworkspace
+    app: quantumworkspace-deployment
 spec:
-  replicas: 3 # number of replicas to be generated
+  replicas: 3
   selector:
     matchLabels:
-      app: quantumworkspace
+      app: quantumworkspace-deployment
   template:
     metadata:
       labels:
-        app: quantumworkspace
+        app: quantumworkspace-deployment
     spec:
       containers:
       - name: quantumworkspace
-        image: elijun831/quantumworkspace:2.0.1
+        image: elijun831/quantumworkspace:2.0.4
         ports:
-        - containerPort: 8888
-        - containerProt: 5678
-        resources: # Set up the CPU and memory limit and request ranges
-          limits:
-            cpu: "1"
-            memory: "1Gi"
-          requests:
-            cpu: "0.5"
-            memory: "512Mi"
+        - containerPort: 443
+        volumeMounts:
+          - mountPath: /nfs-qtum
+            name: qtumnfs
+        readinessProbe:
+          httpGet:
+            path: '/'
+            port: 443
+          initialDelaySeconds: 7
+          timeoutSeconds: 3
+          periodSeconds: 5
+          failureThreshold: 7
+        livenessProbe:
+          httpGet:
+            path: '/'
+            port: 443
+          initialDelaySeconds: 120
+          timeoutSeconds: 3
+          periodSeconds: 5
+          failureThreshold: 7
+      volumes:
+      - name: qtumnfs
+        persistentVolumeClaim:
+          claimName: qtum-volume
 ---
+kind: PersistentVolumeClaim
 apiVersion: v1
-kind: Service
 metadata:
-  name: quantumworkspace-service
+  name: qtum-volume
 spec:
-  selector:
-    app: quantumworkspace
-  ports:
-    - protocol: TCP
-      port: 8888
-      targetPort: 8888
-    - protocol: TCP
-      port: 5678
-      targetPort: 5678
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: qtum-volume
+  resources:
+    requests:
+      storage: 1Ti

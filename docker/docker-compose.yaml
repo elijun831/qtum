@@ -1,15 +1,38 @@
 version: '3.8'
+
 services:
-  webapp:
+  web:
+    build: ./
+    image: elijun831/quantumworkspace:2.0.4
+
+  quantumworkspace:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8888:8888"
+      - "5678:5678"
     volumes:
-      - ./app:/home/appuser/app:rw
-      - ./notebooks:/notebooks
-    user: "root"
-    environment:
-      - PUID=5678
-      - PGID=5678
+      - /notebooks
+    networks:
+      - mynetwork
+    hostname: quantumworkspace
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:8080"
+      - "80:80"
+      - "8443:443"
+    volumes:
+      - /etc/nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - mynetwork
+    depends_on:
+      - quantumworkspace
+    links:
+      - quantumworkspace
+
+networks:
+  mynetwork:
+    driver: bridge

@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: qtum-volume
+spec:
+  storageClassName: ""
+  capacity:
+    storage: 1Ti
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  volumeMode: Filesystem
+  csi:
+    driver: filestore.csi.storage.gke.io
+    volumeHandle: "modeInstance/ asia-northeast3-c/FILESTORE_INSTANCE_NAME/qtumnfs"
+    volumeAttributes:
+      ip: 10.76.90.232/29
+      volume: qtumnfs
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: qtum-volume
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  volumeName: qtum-volume
+  resources:
+    requests:
+      storage: 1Ti
